@@ -1,83 +1,115 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
-class ChargingStationInfo {
-  final int id;
-  final String name;
-  final String address;
-  final String chargingSpeed;
-  final LatLng point;
+class EvseInfo {
+  final String evseNumber;
+  final int maxPower;
+  final String status;
 
-  ChargingStationInfo({
-    required this.id,
-    required this.name,
-    required this.address,
-    required this.chargingSpeed,
-    required this.point,
+  EvseInfo({
+    required this.evseNumber,
+    required this.maxPower,
+    required this.status,
   });
 }
 
-final List<ChargingStationInfo> chargingStations = [
-  ChargingStationInfo(
-    id: 1,
-    name: 'Energie und Wasser Stadtwerke Potsdam Ladestation',
-    address: 'Plantagenpl. 4, 14482 Potsdam',
-    chargingSpeed: '22 kW',
-    point: const LatLng(52.39433483289813, 13.10147618666954),
-  ),
-  ChargingStationInfo(
-    id: 2,
-    name: 'Stadtwerke Potsdam Ladestation',
-    address: 'Reiherweg 1, 14469 Potsdam',
-    chargingSpeed: '22 kW',
-    point: const LatLng(52.41232465857877, 13.033464443618108),
-  ),
-  ChargingStationInfo(
-    id: 3,
-    name: 'Eneco eMobility Charging Station',
-    address: 'Schiffbauergasse 4B, 14467 Potsdam',
-    chargingSpeed: '22 kW',
-    point: const LatLng(52.40350260308182, 13.072348001020512),
-  ),
-  ChargingStationInfo(
-    id: 4,
-    name: 'Allego Ladestation',
-    address: 'Zum Kirchsteigfeld 4, 14480 Potsdam',
-    chargingSpeed: '150 kW',
-    point: const LatLng(52.37159130994981, 13.129320146024778),
-  ),
-  ChargingStationInfo(
-    id: 5,
-    name: 'Comfortcharge Ladestation',
-    address: 'An d. Alten Zauche, 14478 Potsdam',
-    chargingSpeed: '100 kW',
-    point: const LatLng(52.37539634885218, 13.09210064080361),
-  ),
-  ChargingStationInfo(
-    id: 6,
-    name: 'reev Charging Station',
-    address: 'Ulanenweg 2, 14469 Potsdam',
-    chargingSpeed: '22 kW',
-    point: const LatLng(52.407195840572996, 13.05344481680183),
-  ),
-  ChargingStationInfo(
-    id: 7,
-    name: 'Mennekes Charging Station',
-    address: 'Konrad-Zuse-Ring 6B, 14469 Potsdam',
-    chargingSpeed: '22 kW',
-    point: const LatLng(52.433156525494404, 13.057210663126147),
-  ),
-  ChargingStationInfo(
-    id: 8,
-    name: 'Stadtwerke Potsdam Ladestation',
-    address: 'Nedlitzer Str., 14469 Potsdam',
-    chargingSpeed: '22 kW',
-    point: const LatLng(52.430693659670936, 13.053163615783413),
-  ),
-  ChargingStationInfo(
-    id: 9,
-    name: 'EWP Ladestation',
-    address: 'Gutenbergstraße 115, 14467 Potsdam',
-    chargingSpeed: '22 kW',
-    point: const LatLng(52.40190706517614, 13.048365246979596),
-  ),
-];
+class ChargingStationInfo {
+  final String id;
+  final String address;
+  final String city;
+  final LatLng coordinates;
+  final int freechargers;
+  final Map<String, EvseInfo> evses;
+
+  ChargingStationInfo({
+    required this.id,
+    required this.address,
+    required this.city,
+    required this.coordinates,
+    required this.freechargers,
+    required this.evses,
+  });
+
+  factory ChargingStationInfo.fromJson(Map<String, dynamic> json) {
+    Map<String, EvseInfo> evsesMap = {};
+    Set<String> uniqueAvailableEvseNumbers =
+        {}; // Set zur Aufbewahrung eindeutiger verfügbarer EVSE-Nummern
+
+    for (var evse in json['evses']) {
+      for (var connector in evse['connectors']) {
+        evsesMap[evse['id']] = EvseInfo(
+          evseNumber: evse['id'],
+          maxPower: connector['max_power'],
+          status: evse['status'],
+        );
+        if (evse['status'] == 'AVAILABLE') {
+          uniqueAvailableEvseNumbers
+              .add(evse['id']); // Füge eindeutige verfügbare EVSE-Nummern hinzu
+        }
+      }
+    }
+
+    return ChargingStationInfo(
+      id: json['id'],
+      address: json['address'],
+      city: json['city'],
+      coordinates: LatLng(
+        double.parse(json['coordinates']['latitude']),
+        double.parse(json['coordinates']['longitude']),
+      ),
+      freechargers: uniqueAvailableEvseNumbers
+          .length, // Setzen der Anzahl eindeutiger verfügbarer Ladegeräte
+      evses: evsesMap,
+    );
+  }
+}
+
+Future<List<ChargingStationInfo>> fetchChargingStations() async {
+  final response = await http.get(
+    Uri.parse('https://cs1-swp.westeurope.cloudapp.azure.com:8443/chargers'),
+    headers: {'X-Api-Key': '6bcadbac-976e-4d6b-a593-f925fba25506'},
+  );
+
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> data = json.decode(response.body);
+
+    if (data.containsKey('data')) {
+      final List<dynamic> stations = data['data'];
+
+      List<ChargingStationInfo> chargingStations = [];
+
+      for (var station in stations) {
+        chargingStations.add(ChargingStationInfo.fromJson(station));
+      }
+
+      return chargingStations;
+    } else {
+      throw Exception('No data key found in response');
+    }
+  } else {
+    throw Exception('Failed to load charging stations');
+  }
+}
+
+void main() async {
+  try {
+    List<ChargingStationInfo> chargingStations = await fetchChargingStations();
+    for (var station in chargingStations) {
+      print('Adresse: ${station.address}');
+      print('City: ${station.city}');
+      print('Coordinates: ${station.coordinates}');
+      print('Free Chargers: ${station.freechargers}');
+      print('EVSEs:');
+      station.evses.forEach((evseNumber, evseInfo) {
+        print('  EVSE Number: ${evseInfo.evseNumber}');
+        print('  Max Power: ${evseInfo.maxPower}');
+        print('  Status: ${evseInfo.status}');
+        print('   ----');
+      });
+      print('-------------------------------------');
+    }
+  } catch (e) {
+    print('Error: $e');
+  }
+}

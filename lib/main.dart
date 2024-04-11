@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'marker.dart';
@@ -34,6 +36,7 @@ class _ChargingStationState extends State<ChargingStation> {
   late MapController _mapController;
   TextEditingController searchController = TextEditingController();
   Position? currentPosition;
+  List<ChargingStationInfo> chargingStations = [];
 
   @override
   void initState() {
@@ -41,6 +44,7 @@ class _ChargingStationState extends State<ChargingStation> {
     _mapController = MapController();
     _checkLocationPermission();
     _initializeMapLocation();
+    _fetchChargingStations();
   }
 
   void _checkLocationPermission() async {
@@ -48,13 +52,11 @@ class _ChargingStationState extends State<ChargingStation> {
     if (status.isDenied) {
       await Permission.locationWhenInUse.request();
     }
-
     _initializeMapLocation();
   }
 
   void _initializeMapLocation() async {
     LatLng initialPosition = const LatLng(52.390568, 13.064472);
-
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (serviceEnabled) {
       LocationPermission permission = await Geolocator.checkPermission();
@@ -69,10 +71,24 @@ class _ChargingStationState extends State<ChargingStation> {
         }
       }
     }
-
     setState(() {
       _mapController.move(initialPosition, 12.0);
     });
+  }
+
+  void _fetchChargingStations() async {
+    final response = await http.get(
+      Uri.parse('https://cs1-swp.westeurope.cloudapp.azure.com:8443/chargers'),
+      headers: {'X-Api-Key': '6bcadbac-976e-4d6b-a593-f925fba25506'},
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body)['data'];
+      setState(() {
+        chargingStations = data
+            .map((station) => ChargingStationInfo.fromJson(station))
+            .toList();
+      });
+    }
   }
 
   @override
@@ -109,7 +125,7 @@ class _ChargingStationState extends State<ChargingStation> {
                         .map((station) => Marker(
                               width: 40.0,
                               height: 40.0,
-                              point: station.point,
+                              point: station.coordinates,
                               child: GestureDetector(
                                 onTap: () {
                                   setState(() {
@@ -163,7 +179,7 @@ class _ChargingStationState extends State<ChargingStation> {
                         children: [
                           Center(
                             child: Text(
-                              selectedStation!.name,
+                              selectedStation!.address,
                               style: const TextStyle(
                                 fontSize: 20.0,
                                 fontWeight: FontWeight.bold,
@@ -171,38 +187,25 @@ class _ChargingStationState extends State<ChargingStation> {
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          const Divider(
-                            color: Colors.grey,
-                            thickness: 1.0,
-                          ),
-                          const SizedBox(height: 20.0),
-                          Center(
-                            child: Text(
-                              selectedStation!.address,
-                              style: const TextStyle(
-                                fontSize: 18.0,
-                              ),
-                              textAlign: TextAlign.center,
+                          for (var evse in selectedStation!.evses.values)
+                            Column(
+                              children: [
+                                const Divider(
+                                  color: Colors.grey,
+                                  thickness: 1.0,
+                                ),
+                                Text(
+                                  '${evse.maxPower} kw',
+                                  style: const TextStyle(fontSize: 18.0),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Text(
+                                  'Status: ${evse.status}',
+                                  style: const TextStyle(fontSize: 18.0),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 10.0),
-                          Center(
-                            child: Text(
-                              selectedStation!.chargingSpeed,
-                              style: const TextStyle(fontSize: 18.0),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          // Anzeige der Distanz zum aktuellen Standort
-                          if (currentPosition != null &&
-                              selectedStation != null)
-                            Center(
-                              child: Text(
-                                'Distanz: ${_calculateDistance(currentPosition!, selectedStation!.point).toStringAsFixed(2)} km',
-                                style: const TextStyle(fontSize: 18.0),
-                                textAlign: TextAlign.center,
-                              ),
-                            )
                         ],
                       ),
                     ),
@@ -350,7 +353,7 @@ class _ChargingStationState extends State<ChargingStation> {
                       isOverlayVisible = false;
                       selectedFromList = true;
                     });
-                    _moveToLocation(station.point);
+                    _moveToLocation(station.coordinates);
                   },
                 );
               },
