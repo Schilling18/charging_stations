@@ -122,6 +122,7 @@ class _ChargingStationState extends State<ChargingStation> {
                   ),
                   MarkerLayer(
                     markers: chargingStations
+                        .where((station) => station.city == 'Potsdam')
                         .map((station) => Marker(
                               width: 40.0,
                               height: 40.0,
@@ -150,63 +151,91 @@ class _ChargingStationState extends State<ChargingStation> {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                child: Dismissible(
-                  key: const ValueKey("dismissible"),
-                  direction: DismissDirection.down,
-                  onDismissed: (direction) {
-                    setState(() {
-                      selectedStation = null;
-                      selectedFromList = false;
-                    });
+                child: GestureDetector(
+                  onVerticalDragUpdate: (details) {
+                    if (details.delta.dy < 0) {
+                      setState(() {
+                        selectedStation = null;
+                        selectedFromList = false;
+                      });
+                    }
                   },
-                  child: Container(
-                    height: 350,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(40.0),
-                        topRight: Radius.circular(40.0),
+                  child: Dismissible(
+                    key: const ValueKey("dismissible"),
+                    direction: DismissDirection.down,
+                    onDismissed: (direction) {
+                      setState(() {
+                        selectedStation = null;
+                        selectedFromList = false;
+                      });
+                    },
+                    child: Container(
+                      height: 350,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(40.0),
+                          topRight: Radius.circular(40.0),
+                        ),
+                        border: Border.all(
+                          color: Colors.grey,
+                          width: 2.0,
+                        ),
                       ),
-                      border: Border.all(
-                        color: Colors.grey,
-                        width: 2.0,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Center(
-                            child: Text(
-                              selectedStation!.address,
-                              style: const TextStyle(
-                                fontSize: 20.0,
-                                fontWeight: FontWeight.bold,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Center(
+                              child: Text(
+                                selectedStation!.address,
+                                style: const TextStyle(
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
+                            ),
+                            const SizedBox(height: 10.0),
+                            Text(
+                              '${_calculateDistance(currentPosition!, selectedStation!.coordinates).toStringAsFixed(2)} km',
+                              style: const TextStyle(fontSize: 18.0),
                               textAlign: TextAlign.center,
                             ),
-                          ),
-                          for (var evse in selectedStation!.evses.values)
-                            Column(
-                              children: [
-                                const Divider(
-                                  color: Colors.grey,
-                                  thickness: 1.0,
+                            const SizedBox(height: 10.0),
+                            Expanded(
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    for (var evse
+                                        in selectedStation!.evses.values)
+                                      Column(
+                                        children: [
+                                          const Divider(
+                                            color: Colors.grey,
+                                            thickness: 1.0,
+                                          ),
+                                          Text(
+                                            '${evse.maxPower} kw',
+                                            style:
+                                                const TextStyle(fontSize: 18.0),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          Text(
+                                            'Status: ${evse.status}',
+                                            style:
+                                                const TextStyle(fontSize: 18.0),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ],
+                                      ),
+                                  ],
                                 ),
-                                Text(
-                                  '${evse.maxPower} kw',
-                                  style: const TextStyle(fontSize: 18.0),
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  'Status: ${evse.status}',
-                                  style: const TextStyle(fontSize: 18.0),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
+                              ),
                             ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
