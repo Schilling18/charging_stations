@@ -26,14 +26,14 @@ class ChargingStation extends StatefulWidget {
   const ChargingStation({Key? key}) : super(key: key);
 
   @override
-  _ChargingStationState createState() => _ChargingStationState();
+  ChargingStationState createState() => ChargingStationState();
 }
 
-class _ChargingStationState extends State<ChargingStation> {
+class ChargingStationState extends State<ChargingStation> {
   ChargingStationInfo? selectedStation;
   bool isOverlayVisible = false;
   bool selectedFromList = false;
-  late MapController _mapController;
+  late MapController mapController;
   TextEditingController searchController = TextEditingController();
   Position? currentPosition;
   List<ChargingStationInfo> chargingStations = [];
@@ -41,7 +41,7 @@ class _ChargingStationState extends State<ChargingStation> {
   @override
   void initState() {
     super.initState();
-    _mapController = MapController();
+    mapController = MapController();
     _checkLocationPermission();
   }
 
@@ -64,11 +64,15 @@ class _ChargingStationState extends State<ChargingStation> {
         initialPosition = LatLng(position.latitude, position.longitude);
         currentPosition = position;
       } catch (e) {
-        print("Error getting current position: $e");
+        initialPosition = const LatLng(52.390568, 13.064472);
+        currentPosition = null;
       }
+    } else {
+      initialPosition = const LatLng(52.390568, 13.064472);
+      currentPosition = null;
     }
     setState(() {
-      _mapController.move(initialPosition, 12.0);
+      mapController.move(initialPosition, 12.0);
     });
     _fetchChargingStations();
   }
@@ -87,9 +91,11 @@ class _ChargingStationState extends State<ChargingStation> {
               .map((station) => ChargingStationInfo.fromJson(station))
               .toList();
         });
+      } else {
+        _showErrorSnackbar('Error: ${response.reasonPhrase}');
       }
     } catch (e) {
-      print('Error fetching charging stations: $e');
+      _showErrorSnackbar('Error fetching charging stations');
     }
   }
 
@@ -111,7 +117,7 @@ class _ChargingStationState extends State<ChargingStation> {
             AbsorbPointer(
               absorbing: isOverlayVisible,
               child: FlutterMap(
-                mapController: _mapController,
+                mapController: mapController,
                 options: const MapOptions(
                   initialCenter: LatLng(52.390568, 13.064472),
                   initialZoom: 12.0,
@@ -464,10 +470,15 @@ class _ChargingStationState extends State<ChargingStation> {
     );
   }
 
+  void _showErrorSnackbar(String message) {
+    final snackBar = SnackBar(content: Text(message));
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   void _moveToLocation(LatLng point) {
     const zoomLevel = 15.0;
     if (selectedFromList) {
-      _mapController.move(point, zoomLevel);
+      mapController.move(point, zoomLevel);
     }
   }
 
