@@ -43,51 +43,53 @@ class _ChargingStationState extends State<ChargingStation> {
     super.initState();
     _mapController = MapController();
     _checkLocationPermission();
-    _initializeMapLocation();
-    _fetchChargingStations();
   }
 
   void _checkLocationPermission() async {
     var status = await Permission.locationWhenInUse.status;
     if (status.isDenied) {
-      await Permission.locationWhenInUse.request();
+      status = await Permission.locationWhenInUse.request();
     }
-    _initializeMapLocation();
+    if (status.isGranted) {
+      _initializeMapLocation();
+    }
   }
 
   void _initializeMapLocation() async {
     LatLng initialPosition = const LatLng(52.390568, 13.064472);
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (serviceEnabled) {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.whileInUse ||
-          permission == LocationPermission.always) {
-        try {
-          Position position = await Geolocator.getCurrentPosition();
-          initialPosition = LatLng(position.latitude, position.longitude);
-          currentPosition = position;
-        } catch (e) {
-          print("Error getting current position: $e");
-        }
+      try {
+        Position position = await Geolocator.getCurrentPosition();
+        initialPosition = LatLng(position.latitude, position.longitude);
+        currentPosition = position;
+      } catch (e) {
+        print("Error getting current position: $e");
       }
     }
     setState(() {
       _mapController.move(initialPosition, 12.0);
     });
+    _fetchChargingStations();
   }
 
   void _fetchChargingStations() async {
-    final response = await http.get(
-      Uri.parse('https://cs1-swp.westeurope.cloudapp.azure.com:8443/chargers'),
-      headers: {'X-Api-Key': '6bcadbac-976e-4d6b-a593-f925fba25506'},
-    );
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body)['data'];
-      setState(() {
-        chargingStations = data
-            .map((station) => ChargingStationInfo.fromJson(station))
-            .toList();
-      });
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'https://cs1-swp.westeurope.cloudapp.azure.com:8443/chargers'),
+        headers: {'X-Api-Key': '6bcadbac-976e-4d6b-a593-f925fba25506'},
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body)['data'];
+        setState(() {
+          chargingStations = data
+              .map((station) => ChargingStationInfo.fromJson(station))
+              .toList();
+        });
+      }
+    } catch (e) {
+      print('Error fetching charging stations: $e');
     }
   }
 
@@ -146,139 +148,174 @@ class _ChargingStationState extends State<ChargingStation> {
                 ],
               ),
             ),
-            if (selectedStation != null)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: GestureDetector(
-                  onVerticalDragUpdate: (details) {
-                    if (details.delta.dy < 0) {
-                      setState(() {
-                        selectedStation = null;
-                        selectedFromList = false;
-                      });
-                    }
-                  },
-                  child: Dismissible(
-                    key: const ValueKey("dismissible"),
-                    direction: DismissDirection.down,
-                    onDismissed: (direction) {
-                      setState(() {
-                        selectedStation = null;
-                        selectedFromList = false;
-                      });
-                    },
-                    child: Container(
-                      height: 350,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(40.0),
-                          topRight: Radius.circular(40.0),
-                        ),
-                        border: Border.all(
-                          color: Colors.grey,
-                          width: 2.0,
-                        ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Center(
-                              child: Text(
-                                selectedStation!.address,
-                                style: const TextStyle(
-                                  fontSize: 20.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            const SizedBox(height: 10.0),
-                            Text(
-                              '${_calculateDistance(currentPosition!, selectedStation!.coordinates).toStringAsFixed(2)} km',
-                              style: const TextStyle(fontSize: 18.0),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 10.0),
-                            Expanded(
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  children: [
-                                    for (var evse
-                                        in selectedStation!.evses.values)
-                                      Column(
-                                        children: [
-                                          const Divider(
-                                            color: Colors.grey,
-                                            thickness: 1.0,
-                                          ),
-                                          Text(
-                                            '${evse.maxPower} kw',
-                                            style:
-                                                const TextStyle(fontSize: 18.0),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          Text(
-                                            'Status: ${evse.status}',
-                                            style:
-                                                const TextStyle(fontSize: 18.0),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ],
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            if (selectedStation != null) _buildStationDetails(),
             if (isOverlayVisible) _buildSearchOverlay(),
-            if (!isOverlayVisible)
-              Positioned(
-                top: 40,
-                left: 16.0,
-                right: 16.0,
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      isOverlayVisible = true;
-                    });
-                  },
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.white),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12.0),
-                        side: const BorderSide(color: Colors.grey, width: 2.0),
-                      ),
-                    ),
-                  ),
-                  child: const SizedBox(
-                    height: 55.0,
-                    child: Center(
-                      child: Text(
-                        'Ladesäule suchen',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            if (!isOverlayVisible) _buildSearchButton(),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStationDetails() {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: GestureDetector(
+        onVerticalDragUpdate: (details) {
+          if (details.delta.dy < 0) {
+            setState(() {
+              selectedStation = null;
+              selectedFromList = false;
+            });
+          }
+        },
+        child: Dismissible(
+          key: const ValueKey("dismissible"),
+          direction: DismissDirection.down,
+          onDismissed: (direction) {
+            setState(() {
+              selectedStation = null;
+              selectedFromList = false;
+            });
+          },
+          child: Container(
+            height: 350,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(40.0),
+                topRight: Radius.circular(40.0),
+              ),
+              border: Border.all(
+                color: Colors.grey,
+                width: 2.0,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          selectedStation!.address,
+                          style: const TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 10.0),
+                        Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  // Define what the button does here
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                    vertical: 8.0,
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Route',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                  width:
+                                      10.0), // Add some spacing between the buttons
+                              _buildAvailabilityButton(selectedStation!),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10.0),
+                  Center(
+                    child: Text(
+                      '${_calculateDistance(currentPosition!, selectedStation!.coordinates).toStringAsFixed(2)} km',
+                      style: const TextStyle(fontSize: 18.0),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 10.0),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          for (var evse in selectedStation!.evses.values)
+                            Column(
+                              children: [
+                                const Divider(
+                                  color: Colors.grey,
+                                  thickness: 1.0,
+                                ),
+                                Text(
+                                  '${evse.maxPower} kw',
+                                  style: const TextStyle(fontSize: 18.0),
+                                  textAlign: TextAlign.center,
+                                ),
+                                Text(
+                                  'Status: ${evse.status}',
+                                  style: const TextStyle(fontSize: 18.0),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvailabilityButton(ChargingStationInfo station) {
+    int availableCount =
+        station.evses.values.where((evse) => evse.status == 'AVAILABLE').length;
+    bool isAvailable = availableCount > 0;
+    return ElevatedButton(
+      onPressed: () {
+        // Define what the button does here
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: isAvailable ? Colors.green : Colors.red,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 8.0,
+        ),
+      ),
+      child: Text(
+        '$availableCount Verfügbar',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16.0,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
@@ -349,10 +386,7 @@ class _ChargingStationState extends State<ChargingStation> {
                         fontSize: 18,
                       ),
                       onChanged: (value) {
-                        setState(() {
-                          // Update the list whenever the text in the TextField changes
-                          // You can apply your filtering logic here
-                        });
+                        setState(() {});
                       },
                     ),
                   ),
@@ -389,6 +423,43 @@ class _ChargingStationState extends State<ChargingStation> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchButton() {
+    return Positioned(
+      top: 40,
+      left: 16.0,
+      right: 16.0,
+      child: ElevatedButton(
+        onPressed: () {
+          setState(() {
+            isOverlayVisible = true;
+          });
+        },
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0),
+              side: const BorderSide(color: Colors.grey, width: 2.0),
+            ),
+          ),
+        ),
+        child: const SizedBox(
+          height: 55.0,
+          child: Center(
+            child: Text(
+              'Ladesäule suchen',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
       ),
     );
   }
