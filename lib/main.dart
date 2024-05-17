@@ -12,7 +12,7 @@ void main() {
 }
 
 class ChargingStationApp extends StatelessWidget {
-  const ChargingStationApp({Key? key}) : super(key: key);
+  const ChargingStationApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,13 +23,14 @@ class ChargingStationApp extends StatelessWidget {
 }
 
 class ChargingStation extends StatefulWidget {
-  const ChargingStation({Key? key}) : super(key: key);
+  const ChargingStation({super.key});
 
   @override
   ChargingStationState createState() => ChargingStationState();
 }
 
 class ChargingStationState extends State<ChargingStation> {
+  ChargingStationState();
   ChargingStationInfo? selectedStation;
   bool isOverlayVisible = false;
   bool selectedFromList = false;
