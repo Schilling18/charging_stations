@@ -5,7 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'marker.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'API.dart';
 
 void main() {
   runApp(const ChargingStationApp());
@@ -211,7 +212,7 @@ class ChargingStationState extends State<ChargingStation> {
                         Text(
                           selectedStation!.address,
                           style: const TextStyle(
-                            fontSize: 20.0,
+                            fontSize: 22.0, // Schrift um zwei Stufen vergrößert
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
@@ -223,7 +224,9 @@ class ChargingStationState extends State<ChargingStation> {
                             children: [
                               ElevatedButton(
                                 onPressed: () {
-                                  // Define what the button does here
+                                  _launchMapsUrl(
+                                      selectedStation!.coordinates.latitude,
+                                      selectedStation!.coordinates.longitude);
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
@@ -244,9 +247,7 @@ class ChargingStationState extends State<ChargingStation> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(
-                                  width:
-                                      10.0), // Add some spacing between the buttons
+                              const SizedBox(width: 10.0),
                               _buildAvailabilityButton(selectedStation!),
                             ],
                           ),
@@ -255,34 +256,67 @@ class ChargingStationState extends State<ChargingStation> {
                     ),
                   ),
                   const SizedBox(height: 10.0),
-                  Center(
-                    child: Text(
-                      '${_calculateDistance(currentPosition!, selectedStation!.coordinates).toStringAsFixed(2)} km',
-                      style: const TextStyle(fontSize: 18.0),
-                      textAlign: TextAlign.center,
-                    ),
+                  Text(
+                    '${_calculateDistance(currentPosition!, selectedStation!.coordinates).toStringAsFixed(2)} km',
+                    style: const TextStyle(
+                        fontSize: 20.0), // Schrift um zwei Stufen vergrößert
                   ),
                   const SizedBox(height: 10.0),
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
-                          for (var evse in selectedStation!.evses.values)
+                          for (var evse
+                              in selectedStation!.evses.values.toList()
+                                ..sort((a, b) => a.status.compareTo(b.status)))
                             Column(
                               children: [
                                 const Divider(
                                   color: Colors.grey,
                                   thickness: 1.0,
                                 ),
-                                Text(
-                                  '${evse.maxPower} kw',
-                                  style: const TextStyle(fontSize: 18.0),
-                                  textAlign: TextAlign.center,
-                                ),
-                                Text(
-                                  'Status: ${evse.status}',
-                                  style: const TextStyle(fontSize: 18.0),
-                                  textAlign: TextAlign.center,
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.circle,
+                                          color: evse.status == 'AVAILABLE'
+                                              ? Colors.green
+                                              : Colors.red,
+                                          size:
+                                              24.0, // Größe des Kreises erhöht
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(
+                                        width: 8.0), // zusätzlicher Abstand
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          evse.status == 'AVAILABLE'
+                                              ? 'Frei'
+                                              : 'Besetzt',
+                                          style: const TextStyle(
+                                            fontSize:
+                                                20.0, // Schrift um zwei Stufen vergrößert
+                                          ),
+                                        ),
+                                        Text(
+                                          '${evse.maxPower} kW',
+                                          style: const TextStyle(
+                                            fontSize:
+                                                20.0, // Schrift um zwei Stufen vergrößert
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -491,5 +525,15 @@ class ChargingStationState extends State<ChargingStation> {
       stationPosition.longitude,
     );
     return distanceInMeters / 1000;
+  }
+
+  void _launchMapsUrl(double latitude, double longitude) async {
+    final uri = Uri.parse(
+        'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      _showErrorSnackbar('Could not open Google Maps');
+    }
   }
 }
