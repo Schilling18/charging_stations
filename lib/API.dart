@@ -96,18 +96,7 @@ void main() async {
   try {
     List<ChargingStationInfo> chargingStations = await fetchChargingStations();
     for (var station in chargingStations) {
-      print('Adresse: ${station.address}');
-      print('City: ${station.city}');
-      print('Coordinates: ${station.coordinates}');
-      print('Free Chargers: ${station.freechargers}');
-      print('EVSEs:');
-      station.evses.forEach((evseNumber, evseInfo) {
-        print('  EVSE Number: ${evseInfo.evseNumber}');
-        print('  Max Power: ${evseInfo.maxPower}');
-        print('  Status: ${evseInfo.status}');
-        print('   ----');
-      });
-      print('-------------------------------------');
+      station.evses.forEach((evseNumber, evseInfo) {});
     }
   } catch (e) {
     print('Error: $e');

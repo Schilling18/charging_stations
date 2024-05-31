@@ -364,6 +364,7 @@ class ChargingStationState extends State<ChargingStation> {
 
   Widget _buildSearchOverlay() {
     List<ChargingStationInfo> filteredStations = chargingStations
+        .where((station) => station.city.toLowerCase() == 'potsdam')
         .where((station) => station.address
             .toLowerCase()
             .contains(searchController.text.toLowerCase()))
@@ -431,6 +432,52 @@ class ChargingStationState extends State<ChargingStation> {
                       },
                     ),
                   ),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (String result) {
+                      setState(() {
+                        switch (result) {
+                          case 'nearest':
+                            filteredStations.sort((a, b) => _calculateDistance(
+                                    currentPosition!, a.coordinates)
+                                .compareTo(_calculateDistance(
+                                    currentPosition!, b.coordinates)));
+                            break;
+                          case 'available':
+                            filteredStations.sort((a, b) => b.evses.values
+                                .where((evse) => evse.status == 'AVAILABLE')
+                                .length
+                                .compareTo(a.evses.values
+                                    .where((evse) => evse.status == 'AVAILABLE')
+                                    .length));
+                            break;
+                          case 'max_kW':
+                            filteredStations.sort((a, b) => b.evses.values
+                                .map((evse) => evse.maxPower)
+                                .reduce((max, e) => e > max ? e : max)
+                                .compareTo(a.evses.values
+                                    .map((evse) => evse.maxPower)
+                                    .reduce((max, e) => e > max ? e : max)));
+                            break;
+                        }
+                      });
+                    },
+                    itemBuilder: (BuildContext context) =>
+                        <PopupMenuEntry<String>>[
+                      const PopupMenuItem<String>(
+                        value: 'nearest',
+                        child: Text('Nach Nähe sortieren'),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'available',
+                        child: Text('Nach Verfügbarkeit sortieren'),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'max_kW',
+                        child: Text('Nach höchster kW-Anzahl sortieren'),
+                      ),
+                    ],
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () {
@@ -449,8 +496,11 @@ class ChargingStationState extends State<ChargingStation> {
               itemCount: filteredStations.length,
               itemBuilder: (context, index) {
                 ChargingStationInfo station = filteredStations[index];
+                double distance =
+                    _calculateDistance(currentPosition!, station.coordinates);
                 return ListTile(
                   title: Text(station.address),
+                  subtitle: Text('${distance.toStringAsFixed(2)} km entfernt'),
                   onTap: () {
                     setState(() {
                       selectedStation = station;
