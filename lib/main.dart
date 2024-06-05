@@ -92,6 +92,13 @@ class ChargingStationState extends State<ChargingStation> {
           chargingStations = data
               .map((station) => ChargingStationInfo.fromJson(station))
               .toList();
+
+          // Sortiere die Ladestationen nach Nähe
+          if (currentPosition != null) {
+            chargingStations.sort((a, b) =>
+                _calculateDistance(currentPosition!, a.coordinates).compareTo(
+                    _calculateDistance(currentPosition!, b.coordinates)));
+          }
         });
       } else {
         _showErrorSnackbar('Error: ${response.reasonPhrase}');
@@ -388,6 +395,12 @@ class ChargingStationState extends State<ChargingStation> {
   }
 
   Widget _buildSearchContent(List<ChargingStationInfo> filteredStations) {
+    if (currentPosition != null) {
+      filteredStations.sort((a, b) =>
+          _calculateDistance(currentPosition!, a.coordinates)
+              .compareTo(_calculateDistance(currentPosition!, b.coordinates)));
+    }
+
     return Container(
       height: 700.0,
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
