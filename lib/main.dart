@@ -395,6 +395,7 @@ class ChargingStationState extends State<ChargingStation> {
   }
 
   Widget _buildSearchContent(List<ChargingStationInfo> filteredStations) {
+    // Sortiere die gefilterten Ladestationen nach Nähe
     if (currentPosition != null) {
       filteredStations.sort((a, b) =>
           _calculateDistance(currentPosition!, a.coordinates)
