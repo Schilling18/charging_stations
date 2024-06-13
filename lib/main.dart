@@ -540,7 +540,7 @@ class ChargingStationState extends State<ChargingStation> {
             child: Text(
               'Ladesäule suchen',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 21,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
