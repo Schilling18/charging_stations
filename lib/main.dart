@@ -434,12 +434,12 @@ class ChargingStationState extends State<ChargingStation> {
                       decoration: const InputDecoration(
                         hintText: 'Ladesäule suchen',
                         contentPadding:
-                            EdgeInsets.fromLTRB(10.0, 16.0, 16.0, 19.0),
+                            EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 15.0),
                         border: InputBorder.none,
                       ),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 21,
                       ),
                       onChanged: (value) {
                         setState(() {});
