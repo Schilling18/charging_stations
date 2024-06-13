@@ -478,27 +478,33 @@ class ChargingStationState extends State<ChargingStation> {
                   subtitleText += '$availableCount Ladesäulen frei';
                 }
 
-                return ListTile(
-                  title: Text(
-                    station.address,
-                    style: const TextStyle(
-                      fontSize: 18.0, // Schrift um zwei Stufen vergrößert
+                return Column(
+                  children: [
+                    ListTile(
+                      title: Text(
+                        station.address,
+                        style: const TextStyle(
+                          fontSize: 21.0, // Schrift um zwei Stufen vergrößert
+                        ),
+                      ),
+                      subtitle: Text(
+                        subtitleText,
+                        style: const TextStyle(
+                          fontSize: 18.0, // Schrift um zwei Stufen vergrößert
+                        ),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          selectedStation = station;
+                          isOverlayVisible = false;
+                          selectedFromList = true;
+                        });
+                        _moveToLocation(station.coordinates);
+                      },
                     ),
-                  ),
-                  subtitle: Text(
-                    subtitleText,
-                    style: const TextStyle(
-                      fontSize: 18.0, // Schrift um zwei Stufen vergrößert
-                    ),
-                  ),
-                  onTap: () {
-                    setState(() {
-                      selectedStation = station;
-                      isOverlayVisible = false;
-                      selectedFromList = true;
-                    });
-                    _moveToLocation(station.coordinates);
-                  },
+                    const SizedBox(
+                        height: 16.0), // Abstand zwischen den Ladesäulen
+                  ],
                 );
               },
             ),
