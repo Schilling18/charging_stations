@@ -116,7 +116,7 @@ class ChargingStationState extends State<ChargingStation> {
         appBar: PreferredSize(
           preferredSize: Size.fromHeight(isOverlayVisible ? 0 : kToolbarHeight),
           child: AppBar(
-            title: const Text('Ladesäulen'),
+            title: const Text('Potsdamer Ladesäulen'),
             backgroundColor: Colors.grey,
             centerTitle: true,
           ),
