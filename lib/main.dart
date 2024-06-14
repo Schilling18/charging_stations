@@ -231,9 +231,8 @@ class ChargingStationState extends State<ChargingStation> {
                             children: [
                               ElevatedButton(
                                 onPressed: () {
-                                  _launchMapsUrl(
-                                      selectedStation!.coordinates.latitude,
-                                      selectedStation!.coordinates.longitude);
+                                  launchUrl(Uri.parse(
+                                      'https://www.google.com/maps/dir/?api=1&destination=${selectedStation!.coordinates.latitude},${selectedStation!.coordinates.longitude}'));
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
@@ -571,15 +570,5 @@ class ChargingStationState extends State<ChargingStation> {
       stationPosition.longitude,
     );
     return distanceInMeters / 1000;
-  }
-
-  void _launchMapsUrl(double latitude, double longitude) async {
-    final uri = Uri.parse(
-        'https://www.google.com/maps/dir/?api=1&destination=$latitude,$longitude');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      _showErrorSnackbar('Could not open Google Maps');
-    }
   }
 }

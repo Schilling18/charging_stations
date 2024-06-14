@@ -33,8 +33,7 @@ class ChargingStationInfo {
 
   factory ChargingStationInfo.fromJson(Map<String, dynamic> json) {
     Map<String, EvseInfo> evsesMap = {};
-    Set<String> uniqueAvailableEvseNumbers =
-        {}; // Set zur Aufbewahrung eindeutiger verfügbarer EVSE-Nummern
+    Set<String> uniqueAvailableEvseNumbers = {};
 
     for (var evse in json['evses']) {
       for (var connector in evse['connectors']) {
@@ -44,8 +43,7 @@ class ChargingStationInfo {
           status: evse['status'],
         );
         if (evse['status'] == 'AVAILABLE') {
-          uniqueAvailableEvseNumbers
-              .add(evse['id']); // Füge eindeutige verfügbare EVSE-Nummern hinzu
+          uniqueAvailableEvseNumbers.add(evse['id']);
         }
       }
     }
@@ -58,47 +56,47 @@ class ChargingStationInfo {
         double.parse(json['coordinates']['latitude']),
         double.parse(json['coordinates']['longitude']),
       ),
-      freechargers: uniqueAvailableEvseNumbers
-          .length, // Setzen der Anzahl eindeutiger verfügbarer Ladegeräte
+      freechargers: uniqueAvailableEvseNumbers.length,
       evses: evsesMap,
     );
   }
 }
 
-Future<List<ChargingStationInfo>> fetchChargingStations() async {
-  final response = await http.get(
-    Uri.parse('https://cs1-swp.westeurope.cloudapp.azure.com:8443/chargers'),
-    headers: {'X-Api-Key': '6bcadbac-976e-4d6b-a593-f925fba25506'},
-  );
+class ApiService {
+  final String _baseUrl =
+      'https://cs1-swp.westeurope.cloudapp.azure.com:8443/chargers';
+  final String _apiKey = '6bcadbac-976e-4d6b-a593-f925fba25506';
 
-  if (response.statusCode == 200) {
-    final Map<String, dynamic> data = json.decode(response.body);
+  Future<List<ChargingStationInfo>> fetchChargingStations() async {
+    final response = await http.get(
+      Uri.parse(_baseUrl),
+      headers: {'X-Api-Key': _apiKey},
+    );
 
-    if (data.containsKey('data')) {
-      final List<dynamic> stations = data['data'];
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
 
-      List<ChargingStationInfo> chargingStations = [];
+      if (data.containsKey('data')) {
+        final List<dynamic> stations = data['data'];
 
-      for (var station in stations) {
-        chargingStations.add(ChargingStationInfo.fromJson(station));
+        return stations
+            .map((station) => ChargingStationInfo.fromJson(station))
+            .toList();
+      } else {
+        throw Exception('No data key found in response');
       }
-
-      return chargingStations;
     } else {
-      throw Exception('No data key found in response');
+      throw Exception('Failed to load charging stations');
     }
-  } else {
-    throw Exception('Failed to load charging stations');
   }
-}
 
-void main() async {
-  try {
-    List<ChargingStationInfo> chargingStations = await fetchChargingStations();
-    for (var station in chargingStations) {
-      station.evses.forEach((evseNumber, evseInfo) {});
+  Future<List<dynamic>> searchAddress(String query) async {
+    final response = await http.get(Uri.parse(
+        'https://nominatim.openstreetmap.org/search?q=$query&format=json&addressdetails=1&limit=1&countrycodes=de'));
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error: ${response.reasonPhrase}');
     }
-  } catch (e) {
-    print('Error: $e');
   }
 }
