@@ -6,11 +6,13 @@ class EvseInfo {
   final String evseNumber;
   final int maxPower;
   final String status;
+  final bool illegallyParked;
 
   EvseInfo({
     required this.evseNumber,
     required this.maxPower,
     required this.status,
+    required this.illegallyParked,
   });
 }
 
@@ -37,14 +39,25 @@ class ChargingStationInfo {
 
     for (var evse in json['evses']) {
       for (var connector in evse['connectors']) {
+        bool illegallyParked = false;
+        String status = evse['status'];
+
+        if (evse.containsKey('parking_sensor') &&
+            evse['parking_sensor'] is Map) {
+          var parkingSensor = evse['parking_sensor'] as Map<String, dynamic>;
+          illegallyParked = parkingSensor['illegally_parked'] ?? false;
+        }
+
+        if (status == 'AVAILABLE' && !illegallyParked) {
+          uniqueAvailableEvseNumbers.add(evse['id']);
+        }
+
         evsesMap[evse['id']] = EvseInfo(
           evseNumber: evse['id'],
           maxPower: connector['max_power'],
-          status: evse['status'],
+          status: status,
+          illegallyParked: illegallyParked,
         );
-        if (evse['status'] == 'AVAILABLE') {
-          uniqueAvailableEvseNumbers.add(evse['id']);
-        }
       }
     }
 
@@ -98,5 +111,30 @@ class ApiService {
     } else {
       throw Exception('Error: ${response.reasonPhrase}');
     }
+  }
+}
+
+void main() async {
+  final apiService = ApiService();
+  try {
+    final stations = await apiService.fetchChargingStations();
+    for (var station in stations) {
+      print('ID: ${station.id}');
+      print('Address: ${station.address}');
+      print('City: ${station.city}');
+      print(
+          'Coordinates: ${station.coordinates.latitude}, ${station.coordinates.longitude}');
+      print('Free Chargers: ${station.freechargers}');
+      print('EVSEs:');
+      for (var evse in station.evses.values) {
+        print('  EVSE Number: ${evse.evseNumber}');
+        print('  Max Power: ${evse.maxPower}');
+        print('  Status: ${evse.status}');
+        print('  Illegally Parked: ${evse.illegallyParked}');
+      }
+      print('---');
+    }
+  } catch (e) {
+    print('Error: $e');
   }
 }
