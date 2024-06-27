@@ -140,25 +140,33 @@ class ChargingStationState extends State<ChargingStation> {
                   MarkerLayer(
                     markers: chargingStations
                         .where((station) => station.city == 'Potsdam')
-                        .map((station) => Marker(
-                              width: 40.0,
-                              height: 40.0,
-                              point: station.coordinates,
-                              child: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    selectedStation = station;
-                                    selectedFromList = false;
-                                  });
-                                },
-                                child: const Icon(
-                                  Icons.location_on,
-                                  size: 40.0,
-                                  color: Colors.red,
-                                ),
-                              ),
-                            ))
-                        .toList(),
+                        .map((station) {
+                      // Überprüfen, ob mindestens eine EVSE verfügbar ist
+                      bool isAvailable = station.evses.values
+                          .any((evse) => evse.status == 'AVAILABLE');
+
+                      // Icon-Farbe basierend auf Verfügbarkeit setzen
+                      Color iconColor = isAvailable ? Colors.green : Colors.red;
+
+                      return Marker(
+                        width: 40.0,
+                        height: 40.0,
+                        point: station.coordinates,
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedStation = station;
+                              selectedFromList = false;
+                            });
+                          },
+                          child: Icon(
+                            Icons.location_on,
+                            size: 40.0,
+                            color: iconColor,
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ],
               ),
