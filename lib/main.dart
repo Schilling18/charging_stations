@@ -146,7 +146,8 @@ class ChargingStationState extends State<ChargingStation> {
                           .any((evse) => evse.status == 'AVAILABLE');
 
                       // Icon-Farbe basierend auf Verfügbarkeit setzen
-                      Color iconColor = isAvailable ? Colors.green : Colors.red;
+                      Color iconColor =
+                          isAvailable ? Colors.green : Colors.grey;
 
                       return Marker(
                         width: 40.0,
