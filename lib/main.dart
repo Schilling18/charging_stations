@@ -8,10 +8,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'API.dart';
 
+/// Main
 void main() {
   runApp(const ChargingStationApp());
 }
 
+/// Main application widget
 class ChargingStationApp extends StatelessWidget {
   const ChargingStationApp({super.key});
 
@@ -23,6 +25,7 @@ class ChargingStationApp extends StatelessWidget {
   }
 }
 
+/// Stateful widget for the Charging Station screen
 class ChargingStation extends StatefulWidget {
   const ChargingStation({super.key});
 
@@ -47,6 +50,7 @@ class ChargingStationState extends State<ChargingStation> {
     _checkLocationPermission();
   }
 
+  /// Checks and requests location permission
   void _checkLocationPermission() async {
     var status = await Permission.locationWhenInUse.status;
     if (status.isDenied) {
@@ -57,6 +61,7 @@ class ChargingStationState extends State<ChargingStation> {
     }
   }
 
+  /// Initializes map with current location if available
   void _initializeMapLocation() async {
     LatLng initialPosition = const LatLng(52.390568, 13.064472);
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -79,6 +84,7 @@ class ChargingStationState extends State<ChargingStation> {
     _fetchChargingStations();
   }
 
+  /// Fetches charging stations from the API
   void _fetchChargingStations() async {
     try {
       final response = await http.get(
@@ -93,7 +99,7 @@ class ChargingStationState extends State<ChargingStation> {
               .map((station) => ChargingStationInfo.fromJson(station))
               .toList();
 
-          // Sortiere die Ladestationen nach Nähe
+          /// Sort the charging stations by proximity
           if (currentPosition != null) {
             chargingStations.sort((a, b) =>
                 _calculateDistance(currentPosition!, a.coordinates).compareTo(
@@ -141,11 +147,10 @@ class ChargingStationState extends State<ChargingStation> {
                     markers: chargingStations
                         .where((station) => station.city == 'Potsdam')
                         .map((station) {
-                      // Überprüfen, ob mindestens eine EVSE verfügbar ist
                       bool isAvailable = station.evses.values
                           .any((evse) => evse.status == 'AVAILABLE');
 
-                      // Icon-Farbe basierend auf Verfügbarkeit setzen
+                      // Setting: Icon-Color
                       Color iconColor =
                           isAvailable ? Colors.green : Colors.grey;
 
@@ -181,6 +186,7 @@ class ChargingStationState extends State<ChargingStation> {
     );
   }
 
+  /// Builds the station details view
   Widget _buildStationDetails() {
     return Positioned(
       bottom: 0,
@@ -228,7 +234,7 @@ class ChargingStationState extends State<ChargingStation> {
                         Text(
                           selectedStation!.address,
                           style: const TextStyle(
-                            fontSize: 22.0, // Schrift um zwei Stufen vergrößert
+                            fontSize: 22.0,
                             fontWeight: FontWeight.bold,
                           ),
                           textAlign: TextAlign.center,
@@ -273,8 +279,7 @@ class ChargingStationState extends State<ChargingStation> {
                   const SizedBox(height: 10.0),
                   Text(
                     '${_calculateDistance(currentPosition!, selectedStation!.coordinates).toStringAsFixed(2)} km',
-                    style: const TextStyle(
-                        fontSize: 20.0), // Schrift um zwei Stufen vergrößert
+                    style: const TextStyle(fontSize: 20.0),
                   ),
                   const SizedBox(height: 10.0),
                   Expanded(
@@ -302,13 +307,11 @@ class ChargingStationState extends State<ChargingStation> {
                                           color: evse.status == 'AVAILABLE'
                                               ? Colors.green
                                               : Colors.red,
-                                          size:
-                                              24.0, // Größe des Kreises erhöht
+                                          size: 24.0,
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(
-                                        width: 8.0), // zusätzlicher Abstand
+                                    const SizedBox(width: 8.0),
                                     Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -318,15 +321,13 @@ class ChargingStationState extends State<ChargingStation> {
                                               ? 'Frei'
                                               : 'Besetzt',
                                           style: const TextStyle(
-                                            fontSize:
-                                                20.0, // Schrift um zwei Stufen vergrößert
+                                            fontSize: 20.0,
                                           ),
                                         ),
                                         Text(
                                           '${evse.maxPower} kW',
                                           style: const TextStyle(
-                                            fontSize:
-                                                20.0, // Schrift um zwei Stufen vergrößert
+                                            fontSize: 20.0,
                                           ),
                                         ),
                                       ],
@@ -348,13 +349,14 @@ class ChargingStationState extends State<ChargingStation> {
     );
   }
 
+  /// Builds the availability button on the Dismissible Widget
   Widget _buildAvailabilityButton(ChargingStationInfo station) {
     int availableCount =
         station.evses.values.where((evse) => evse.status == 'AVAILABLE').length;
     bool isAvailable = availableCount > 0;
     return ElevatedButton(
       onPressed: () {
-        // Define what the button does here
+        //Not a Button, chose widget for style reasons
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: isAvailable ? Colors.green : Colors.red,
@@ -377,6 +379,7 @@ class ChargingStationState extends State<ChargingStation> {
     );
   }
 
+  /// Builds the search overlay
   Widget _buildSearchOverlay() {
     List<ChargingStationInfo> filteredStations = chargingStations
         .where((station) => station.city.toLowerCase() == 'potsdam')
@@ -402,8 +405,9 @@ class ChargingStationState extends State<ChargingStation> {
     );
   }
 
+  /// Fills the Search-view with content, containing various information
   Widget _buildSearchContent(List<ChargingStationInfo> filteredStations) {
-    // Sortiere die gefilterten Ladestationen nach Nähe
+    // Sort the charging stations by proximity
     if (currentPosition != null) {
       filteredStations.sort((a, b) =>
           _calculateDistance(currentPosition!, a.coordinates)
@@ -492,13 +496,13 @@ class ChargingStationState extends State<ChargingStation> {
                       title: Text(
                         station.address,
                         style: const TextStyle(
-                          fontSize: 21.0, // Schrift um zwei Stufen vergrößert
+                          fontSize: 21.0,
                         ),
                       ),
                       subtitle: Text(
                         subtitleText,
                         style: const TextStyle(
-                          fontSize: 18.0, // Schrift um zwei Stufen vergrößert
+                          fontSize: 18.0,
                         ),
                       ),
                       onTap: () {
@@ -510,8 +514,7 @@ class ChargingStationState extends State<ChargingStation> {
                         _moveToLocation(station.coordinates);
                       },
                     ),
-                    const SizedBox(
-                        height: 16.0), // Abstand zwischen den Ladesäulen
+                    const SizedBox(height: 16.0),
                   ],
                 );
               },
@@ -522,6 +525,7 @@ class ChargingStationState extends State<ChargingStation> {
     );
   }
 
+  /// Builds the search button
   Widget _buildSearchButton() {
     return Positioned(
       top: 40,
@@ -559,11 +563,13 @@ class ChargingStationState extends State<ChargingStation> {
     );
   }
 
+  /// show error text on the App
   void _showErrorSnackbar(String message) {
     final snackBar = SnackBar(content: Text(message));
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  /// moves the map to the current location
   void _moveToLocation(LatLng point) {
     const zoomLevel = 15.0;
     if (selectedFromList) {
@@ -571,6 +577,7 @@ class ChargingStationState extends State<ChargingStation> {
     }
   }
 
+  /// calculate the distance between the current location and the charging station
   double _calculateDistance(Position currentPosition, LatLng stationPosition) {
     double distanceInMeters = Geolocator.distanceBetween(
       currentPosition.latitude,
