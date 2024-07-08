@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
+/// Class representing an Electric Vehicle Supply Equipment (EVSE).
 class EvseInfo {
   final String evseNumber;
   final int maxPower;
@@ -16,6 +17,7 @@ class EvseInfo {
   });
 }
 
+/// Class representing a Charging Station.
 class ChargingStationInfo {
   final String id;
   final String address;
@@ -33,6 +35,8 @@ class ChargingStationInfo {
     required this.evses,
   });
 
+  /// Factory constructor to create an instance of ChargingStationInfo from JSON
+  /// Checks if a car is charging at the charging station, and if a car is illegally stopping without actually charging.
   factory ChargingStationInfo.fromJson(Map<String, dynamic> json) {
     Map<String, EvseInfo> evsesMap = {};
     Set<String> uniqueAvailableEvseNumbers = {};
@@ -75,11 +79,13 @@ class ChargingStationInfo {
   }
 }
 
+/// Service class for API interactions.
 class ApiService {
   final String _baseUrl =
       'https://cs1-swp.westeurope.cloudapp.azure.com:8443/chargers';
   final String _apiKey = '6bcadbac-976e-4d6b-a593-f925fba25506';
 
+  /// Fetches the list of charging stations from the API.
   Future<List<ChargingStationInfo>> fetchChargingStations() async {
     final response = await http.get(
       Uri.parse(_baseUrl),
@@ -103,6 +109,7 @@ class ApiService {
     }
   }
 
+  /// Searches for an address using the OpenStreetMap Nominatim API.
   Future<List<dynamic>> searchAddress(String query) async {
     final response = await http.get(Uri.parse(
         'https://nominatim.openstreetmap.org/search?q=$query&format=json&addressdetails=1&limit=1&countrycodes=de'));
@@ -114,6 +121,7 @@ class ApiService {
   }
 }
 
+/// Used for debugging.
 void main() async {
   final apiService = ApiService();
   try {
