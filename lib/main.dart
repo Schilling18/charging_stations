@@ -50,71 +50,6 @@ class ChargingStationState extends State<ChargingStation> {
     _checkLocationPermission();
   }
 
-  /// Checks and requests location permission
-  /// if denied, LatLng(52.390568, 13.064472) (Potsdam) will be used as location.
-  void _checkLocationPermission() async {
-    var status = await Permission.locationWhenInUse.status;
-    if (status.isDenied) {
-      status = await Permission.locationWhenInUse.request();
-    }
-    if (status.isGranted) {
-      _initializeMapLocation();
-    }
-  }
-
-  /// Initializes map with current location if available
-  void _initializeMapLocation() async {
-    LatLng initialPosition = const LatLng(52.390568, 13.064472);
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (serviceEnabled) {
-      try {
-        Position position = await Geolocator.getCurrentPosition();
-        initialPosition = LatLng(position.latitude, position.longitude);
-        currentPosition = position;
-      } catch (e) {
-        initialPosition = const LatLng(52.390568, 13.064472);
-        currentPosition = null;
-      }
-    } else {
-      initialPosition = const LatLng(52.390568, 13.064472);
-      currentPosition = null;
-    }
-    setState(() {
-      mapController.move(initialPosition, 12.0);
-    });
-    _fetchChargingStations();
-  }
-
-  /// Fetches charging stations from the API
-  void _fetchChargingStations() async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-            'https://cs1-swp.westeurope.cloudapp.azure.com:8443/chargers'),
-        headers: {'X-Api-Key': '6bcadbac-976e-4d6b-a593-f925fba25506'},
-      );
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body)['data'];
-        setState(() {
-          chargingStations = data
-              .map((station) => ChargingStationInfo.fromJson(station))
-              .toList();
-
-          /// Sort the charging stations by proximity
-          if (currentPosition != null) {
-            chargingStations.sort((a, b) =>
-                _calculateDistance(currentPosition!, a.coordinates).compareTo(
-                    _calculateDistance(currentPosition!, b.coordinates)));
-          }
-        });
-      } else {
-        _showErrorSnackbar('Error: ${response.reasonPhrase}');
-      }
-    } catch (e) {
-      _showErrorSnackbar('Error fetching charging stations');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return MediaQuery(
@@ -562,6 +497,95 @@ class ChargingStationState extends State<ChargingStation> {
         ),
       ),
     );
+  }
+
+  /// Checks and requests location permission
+  void _checkLocationPermission() async {
+    var status = await Permission.locationWhenInUse.status;
+    if (status.isDenied) {
+      status = await Permission.locationWhenInUse.request();
+    }
+    if (status.isGranted) {
+      _initializeMapLocation();
+    } else {
+      _showPermissionDeniedDialog();
+      _initializeMapLocation();
+    }
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Standortberechtigung verweigert"),
+          content: const Text(
+              "Um nahegelegene Ladestationen korrekt anzuzeigen, ist ein Standortzugriff erforderlich. Dies kann in den Einstellungen verändet werden"),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Initializes map with current location if available
+  /// if denied, LatLng(52.390568, 13.064472) (Potsdam) will be used as location.
+  void _initializeMapLocation() async {
+    LatLng initialPosition = const LatLng(52.390568, 13.064472);
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (serviceEnabled) {
+      try {
+        Position position = await Geolocator.getCurrentPosition();
+        initialPosition = LatLng(position.latitude, position.longitude);
+        currentPosition = position;
+      } catch (e) {
+        initialPosition = const LatLng(52.390568, 13.064472);
+        currentPosition = null;
+      }
+    } else {
+      initialPosition = const LatLng(52.390568, 13.064472);
+      currentPosition = null;
+    }
+    setState(() {
+      mapController.move(initialPosition, 12.0);
+    });
+    _fetchChargingStations();
+  }
+
+  /// Fetches charging stations from the API
+  void _fetchChargingStations() async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+            'https://cs1-swp.westeurope.cloudapp.azure.com:8443/chargers'),
+        headers: {'X-Api-Key': '6bcadbac-976e-4d6b-a593-f925fba25506'},
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body)['data'];
+        setState(() {
+          chargingStations = data
+              .map((station) => ChargingStationInfo.fromJson(station))
+              .toList();
+
+          /// Sort the charging stations by proximity
+          if (currentPosition != null) {
+            chargingStations.sort((a, b) =>
+                _calculateDistance(currentPosition!, a.coordinates).compareTo(
+                    _calculateDistance(currentPosition!, b.coordinates)));
+          }
+        });
+      } else {
+        _showErrorSnackbar('Error: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      _showErrorSnackbar('Error fetching charging stations');
+    }
   }
 
   /// show error text on the App
