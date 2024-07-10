@@ -518,6 +518,7 @@ class ChargingStationState extends State<ChargingStation> {
     }
   }
 
+  /// Displays an error message if location permission is denied
   void _showPermissionDeniedDialog() {
     showDialog(
       context: context,
