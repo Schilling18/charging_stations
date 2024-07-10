@@ -183,7 +183,7 @@ class ChargingStationState extends State<ChargingStation> {
                               ElevatedButton(
                                 onPressed: () {
                                   launchUrl(Uri.parse(
-                                      'https://www.google.com/maps/dir/?api=1&destination=${selectedStation!.coordinates.latitude},${selectedStation!.coordinates.longitude}'));
+                                      'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(selectedStation!.address)}'));
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
@@ -540,7 +540,6 @@ class ChargingStationState extends State<ChargingStation> {
   }
 
   /// Initializes map with current location if available
-  /// if denied, LatLng(52.390568, 13.064472) (Potsdam) will be used as location.
   void _initializeMapLocation() async {
     LatLng initialPosition = const LatLng(52.390568, 13.064472);
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
