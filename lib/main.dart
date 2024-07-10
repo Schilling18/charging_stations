@@ -51,6 +51,7 @@ class ChargingStationState extends State<ChargingStation> {
   }
 
   /// Checks and requests location permission
+  /// if denied, LatLng(52.390568, 13.064472) (Potsdam) will be used as location.
   void _checkLocationPermission() async {
     var status = await Permission.locationWhenInUse.status;
     if (status.isDenied) {
