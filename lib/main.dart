@@ -213,10 +213,11 @@ class ChargingStationState extends State<ChargingStation> {
                     ),
                   ),
                   const SizedBox(height: 10.0),
-                  Text(
-                    '${_calculateDistance(currentPosition!, selectedStation!.coordinates).toStringAsFixed(2)} km',
-                    style: const TextStyle(fontSize: 20.0),
-                  ),
+                  if (currentPosition != null)
+                    Text(
+                      '${_calculateDistance(currentPosition!, selectedStation!.coordinates).toStringAsFixed(2)} km',
+                      style: const TextStyle(fontSize: 20.0),
+                    ),
                   const SizedBox(height: 10.0),
                   Expanded(
                     child: SingleChildScrollView(
@@ -348,6 +349,8 @@ class ChargingStationState extends State<ChargingStation> {
       filteredStations.sort((a, b) =>
           _calculateDistance(currentPosition!, a.coordinates)
               .compareTo(_calculateDistance(currentPosition!, b.coordinates)));
+    } else {
+      filteredStations.sort((a, b) => a.address.compareTo(b.address));
     }
 
     return Container(
@@ -412,14 +415,16 @@ class ChargingStationState extends State<ChargingStation> {
               itemCount: filteredStations.length,
               itemBuilder: (context, index) {
                 ChargingStationInfo station = filteredStations[index];
-                double distance =
-                    _calculateDistance(currentPosition!, station.coordinates);
                 int availableCount = station.evses.values
                     .where((evse) => evse.status == 'AVAILABLE')
                     .length;
 
-                String subtitleText =
-                    '${distance.toStringAsFixed(2)} km entfernt, ';
+                String subtitleText = '';
+                if (currentPosition != null) {
+                  double distance =
+                      _calculateDistance(currentPosition!, station.coordinates);
+                  subtitleText = '${distance.toStringAsFixed(2)} km entfernt, ';
+                }
                 if (availableCount == 1) {
                   subtitleText += '$availableCount Ladesäule frei';
                 } else {
