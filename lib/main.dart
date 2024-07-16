@@ -1,7 +1,7 @@
 // Created 14.03.2024 by Christopher Schilling
 // Last Modified 17.07.2024
 //
-// The file builds the visuals of the charging_station app. It also implements
+// The file builds the visuals of the charging station app. It also implements
 // some helper functions
 //
 // __version__ = "1.0.0"

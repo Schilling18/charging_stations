@@ -1,4 +1,4 @@
-// Created 14.03.2024 by Christopher Schilling
+// Created 20.03.2024 by Christopher Schilling
 // Last Modified 17.07.2024
 //
 // The file converts and filters the information from the API
