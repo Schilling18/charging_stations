@@ -1,3 +1,14 @@
+// Created 14.03.2024 by Christopher Schilling
+// Last Modified 17.07.2024
+//
+// The file builds the visuals of the charging_station app. It also implements
+// some helper functions
+//
+// __version__ = "1.0.0"
+//
+// __author__ = "Christopher Schilling"
+//
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';

@@ -1,3 +1,14 @@
+// Created 14.03.2024 by Christopher Schilling
+// Last Modified 17.07.2024
+//
+// The file converts and filters the information from the API
+// into a usable entity
+//
+// __version__ = "1.0.0"
+//
+// __author__ = "Christopher Schilling"
+//
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
