@@ -4,7 +4,7 @@
 // The file builds the visuals of the charging station app. It also implements
 // some helper functions
 //
-// __version__ = "1.0.0"
+// __version__ = "1.0.2"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -66,14 +66,6 @@ class ChargingStationState extends State<ChargingStation> {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(viewInsets: EdgeInsets.zero),
       child: Scaffold(
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(isOverlayVisible ? 0 : kToolbarHeight),
-          child: AppBar(
-            title: const Text('Potsdamer Ladesäulen'),
-            backgroundColor: Colors.grey,
-            centerTitle: true,
-          ),
-        ),
         body: Stack(
           children: [
             AbsorbPointer(
@@ -129,6 +121,9 @@ class ChargingStationState extends State<ChargingStation> {
             if (!isOverlayVisible) _buildSearchButton(),
           ],
         ),
+        bottomNavigationBar: (selectedStation == null && !isOverlayVisible)
+            ? _buildBottomBar()
+            : null, // Bottom bar is hidden when the station details or overlay are visible
       ),
     );
   }
@@ -482,7 +477,7 @@ class ChargingStationState extends State<ChargingStation> {
   /// Builds the search button
   Widget _buildSearchButton() {
     return Positioned(
-      top: 40,
+      top: 78,
       left: 16.0,
       right: 16.0,
       child: ElevatedButton(
@@ -529,6 +524,84 @@ class ChargingStationState extends State<ChargingStation> {
       _showPermissionDeniedDialog();
       _initializeMapLocation();
     }
+  }
+
+  /// Builds the bottom navigation bar
+  Widget _buildBottomBar() {
+    return BottomAppBar(
+      height: 70,
+      color: Colors.grey[400],
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 8.0,
+      child: SizedBox(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            // Button für "Gespeichert"
+            ElevatedButton(
+              onPressed: () {
+                // Aktion für "Gespeichert"-Button
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              child: const Text(
+                'Favoriten',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            // Button für "Einstellungen"
+            ElevatedButton(
+              onPressed: () {
+                // Aktion für "Einstellungen"-Button
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0), // Anpassung des Paddings
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              child: const Text(
+                'Einstellungen',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Aktion für "Einstellungen"-Button
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0), // Anpassung des Paddings
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              child: const Text(
+                'Hilfe',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Displays an error message if location permission is denied
