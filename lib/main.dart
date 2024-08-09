@@ -226,7 +226,8 @@ class ChargingStationState extends State<ChargingStation> {
                   const SizedBox(height: 10.0),
                   if (currentPosition != null)
                     Text(
-                      '${_calculateDistance(currentPosition!, selectedStation!.coordinates).toStringAsFixed(2)} km',
+                      _formatDistance(_calculateDistance(
+                          currentPosition!, selectedStation!.coordinates)),
                       style: const TextStyle(fontSize: 20.0),
                     ),
                   const SizedBox(height: 10.0),
@@ -434,8 +435,9 @@ class ChargingStationState extends State<ChargingStation> {
                 if (currentPosition != null) {
                   double distance =
                       _calculateDistance(currentPosition!, station.coordinates);
-                  subtitleText = '${distance.toStringAsFixed(2)} km entfernt, ';
+                  subtitleText = '${_formatDistance(distance)} entfernt, ';
                 }
+
                 if (availableCount == 1) {
                   subtitleText += '$availableCount Ladesäule frei';
                 } else {
@@ -627,5 +629,14 @@ class ChargingStationState extends State<ChargingStation> {
       stationPosition.longitude,
     );
     return distanceInMeters / 1000;
+  }
+
+  /// Formatting the distance of the user to the charging station. (meter: if distance > 1km)
+  String _formatDistance(double distance) {
+    if (distance < 1) {
+      return '${(distance * 1000).toStringAsFixed(0)} m';
+    } else {
+      return '${distance.toStringAsFixed(2)} km';
+    }
   }
 }
