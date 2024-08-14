@@ -512,20 +512,6 @@ class ChargingStationState extends State<ChargingStation> {
     );
   }
 
-  /// Checks and requests location permission
-  void _checkLocationPermission() async {
-    var status = await Permission.locationWhenInUse.status;
-    if (status.isDenied) {
-      status = await Permission.locationWhenInUse.request();
-    }
-    if (status.isGranted) {
-      _initializeMapLocation();
-    } else {
-      _showPermissionDeniedDialog();
-      _initializeMapLocation();
-    }
-  }
-
   /// Builds the bottom navigation bar
   Widget _buildBottomBar() {
     return BottomAppBar(
@@ -564,8 +550,7 @@ class ChargingStationState extends State<ChargingStation> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0), // Anpassung des Paddings
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -584,8 +569,7 @@ class ChargingStationState extends State<ChargingStation> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0), // Anpassung des Paddings
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
@@ -647,6 +631,20 @@ class ChargingStationState extends State<ChargingStation> {
       mapController.move(initialPosition, 12.0);
     });
     _fetchChargingStations();
+  }
+
+  /// Checks and requests location permission
+  void _checkLocationPermission() async {
+    var status = await Permission.locationWhenInUse.status;
+    if (status.isDenied) {
+      status = await Permission.locationWhenInUse.request();
+    }
+    if (status.isGranted) {
+      _initializeMapLocation();
+    } else {
+      _showPermissionDeniedDialog();
+      _initializeMapLocation();
+    }
   }
 
   /// Fetches charging stations from the API
