@@ -10,6 +10,7 @@
 //
 
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
@@ -138,22 +139,28 @@ void main() async {
   try {
     final stations = await apiService.fetchChargingStations();
     for (var station in stations) {
-      print('ID: ${station.id}');
-      print('Address: ${station.address}');
-      print('City: ${station.city}');
-      print(
-          'Coordinates: ${station.coordinates.latitude}, ${station.coordinates.longitude}');
-      print('Free Chargers: ${station.freechargers}');
-      print('EVSEs:');
-      for (var evse in station.evses.values) {
-        print('  EVSE Number: ${evse.evseNumber}');
-        print('  Max Power: ${evse.maxPower}');
-        print('  Status: ${evse.status}');
-        print('  Illegally Parked: ${evse.illegallyParked}');
+      if (kDebugMode) {
+        print('ID: ${station.id}');
+        print('Address: ${station.address}');
+        print('City: ${station.city}');
+        print(
+            'Coordinates: ${station.coordinates.latitude}, ${station.coordinates.longitude}');
+        print('Free Chargers: ${station.freechargers}');
+        print('EVSEs:');
+        for (var evse in station.evses.values) {
+          print('  EVSE Number: ${evse.evseNumber}');
+          print('  Max Power: ${evse.maxPower}');
+          print('  Status: ${evse.status}');
+          print('  Illegally Parked: ${evse.illegallyParked}');
+        }
       }
-      print('---');
+      if (kDebugMode) {
+        print('---');
+      }
     }
   } catch (e) {
-    print('Error: $e');
+    if (kDebugMode) {
+      print('Error: $e');
+    }
   }
 }

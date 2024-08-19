@@ -9,15 +9,15 @@
 // __author__ = "Christopher Schilling"
 //
 
-import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'API.dart';
+import 'api.dart';
+import 'functions.dart';
 
 /// Main
 void main() {
@@ -59,6 +59,7 @@ class ChargingStationState extends State<ChargingStation> {
     super.initState();
     mapController = MapController();
     _checkLocationPermission();
+    // if Permission is granted, map gets initialised
   }
 
   @override
@@ -221,7 +222,7 @@ class ChargingStationState extends State<ChargingStation> {
                   const SizedBox(height: 10.0),
                   if (currentPosition != null)
                     Text(
-                      _formatDistance(_calculateDistance(
+                      formatDistance(calculateDistance(
                           currentPosition!, selectedStation!.coordinates)),
                       style: const TextStyle(fontSize: 20.0),
                     ),
@@ -354,8 +355,8 @@ class ChargingStationState extends State<ChargingStation> {
     // Sort the charging stations by proximity
     if (currentPosition != null) {
       filteredStations.sort((a, b) =>
-          _calculateDistance(currentPosition!, a.coordinates)
-              .compareTo(_calculateDistance(currentPosition!, b.coordinates)));
+          calculateDistance(currentPosition!, a.coordinates)
+              .compareTo(calculateDistance(currentPosition!, b.coordinates)));
     } else {
       filteredStations.sort((a, b) => a.address.compareTo(b.address));
     }
@@ -429,8 +430,8 @@ class ChargingStationState extends State<ChargingStation> {
                 String subtitleText = '';
                 if (currentPosition != null) {
                   double distance =
-                      _calculateDistance(currentPosition!, station.coordinates);
-                  subtitleText = '${_formatDistance(distance)} entfernt, ';
+                      calculateDistance(currentPosition!, station.coordinates);
+                  subtitleText = '${formatDistance(distance)} entfernt, ';
                 }
 
                 if (availableCount == 1) {
@@ -630,7 +631,18 @@ class ChargingStationState extends State<ChargingStation> {
     setState(() {
       mapController.move(initialPosition, 12.0);
     });
-    _fetchChargingStations();
+
+    final apiService = ApiService();
+    try {
+      final stations = await apiService.fetchChargingStations();
+      setState(() {
+        chargingStations = stations;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error: $e');
+      }
+    }
   }
 
   /// Checks and requests location permission
@@ -647,67 +659,11 @@ class ChargingStationState extends State<ChargingStation> {
     }
   }
 
-  /// Fetches charging stations from the API
-  void _fetchChargingStations() async {
-    try {
-      final response = await http.get(
-        Uri.parse(
-            'https://cs1-swp.westeurope.cloudapp.azure.com:8443/chargers'),
-        headers: {'X-Api-Key': '6bcadbac-976e-4d6b-a593-f925fba25506'},
-      );
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body)['data'];
-        setState(() {
-          chargingStations = data
-              .map((station) => ChargingStationInfo.fromJson(station))
-              .toList();
-
-          /// Sort the charging stations by proximity
-          if (currentPosition != null) {
-            chargingStations.sort((a, b) =>
-                _calculateDistance(currentPosition!, a.coordinates).compareTo(
-                    _calculateDistance(currentPosition!, b.coordinates)));
-          }
-        });
-      } else {
-        _showErrorSnackbar('Error: ${response.reasonPhrase}');
-      }
-    } catch (e) {
-      _showErrorSnackbar('Error fetching charging stations');
-    }
-  }
-
-  /// show error text on the App
-  void _showErrorSnackbar(String message) {
-    final snackBar = SnackBar(content: Text(message));
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
-  }
-
   /// moves the map to the current location
   void _moveToLocation(LatLng point) {
     const zoomLevel = 15.0;
     if (selectedFromList) {
       mapController.move(point, zoomLevel);
-    }
-  }
-
-  /// calculate the distance between the current location and the charging station
-  double _calculateDistance(Position currentPosition, LatLng stationPosition) {
-    double distanceInMeters = Geolocator.distanceBetween(
-      currentPosition.latitude,
-      currentPosition.longitude,
-      stationPosition.latitude,
-      stationPosition.longitude,
-    );
-    return distanceInMeters / 1000;
-  }
-
-  /// Formatting the distance of the user to the charging station. (meter: if distance > 1km)
-  String _formatDistance(double distance) {
-    if (distance < 1) {
-      return '${(distance * 1000).toStringAsFixed(0)} m';
-    } else {
-      return '${distance.toStringAsFixed(2)} km';
     }
   }
 }
