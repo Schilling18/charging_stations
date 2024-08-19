@@ -1,10 +1,10 @@
 // Created 14.03.2024 by Christopher Schilling
-// Last Modified 17.07.2024
+// Last Modified 20.08.2024
 //
 // The file builds the visuals of the charging station app. It also implements
 // some helper functions
 //
-// __version__ = "1.0.2"
+// __version__ = "1.0.4"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -589,28 +589,6 @@ class ChargingStationState extends State<ChargingStation> {
     );
   }
 
-  /// Displays an error message if location permission is denied
-  void _showPermissionDeniedDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Standortberechtigung verweigert"),
-          content: const Text(
-              "Um nahegelegene Ladestationen korrekt anzuzeigen, ist ein Standortzugriff erforderlich. Dies kann in den Einstellungen verändet werden"),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   /// Initializes map with current location if available
   void _initializeMapLocation() async {
     LatLng initialPosition = const LatLng(52.390568, 13.064472);
@@ -654,7 +632,12 @@ class ChargingStationState extends State<ChargingStation> {
     if (status.isGranted) {
       _initializeMapLocation();
     } else {
-      _showPermissionDeniedDialog();
+      if (mounted) {
+        showPermissionDeniedDialog(context);
+        _initializeMapLocation();
+      } else {
+        return;
+      }
       _initializeMapLocation();
     }
   }

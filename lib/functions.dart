@@ -1,3 +1,15 @@
+// Created 14.03.2024 by Christopher Schilling
+// Last Modified 20.08.2024
+//
+// The file builds the visuals of the charging station app. It also implements
+// some helper functions
+//
+// __version__ = "1.0.0"
+//
+// __author__ = "Christopher Schilling"
+//
+
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -19,4 +31,27 @@ String formatDistance(double distance) {
   } else {
     return '${distance.toStringAsFixed(2)} km';
   }
+}
+
+/// Displays an error message if location permission is denied
+void showPermissionDeniedDialog(BuildContext context) {
+  // Synchronous call
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("Standortberechtigung verweigert"),
+        content: const Text(
+            "Um nahegelegene Ladestationen korrekt anzuzeigen, ist ein Standortzugriff erforderlich. Dies kann in den Einstellungen verändet werden"),
+        actions: <Widget>[
+          TextButton(
+            child: const Text("OK"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
 }
