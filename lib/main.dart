@@ -62,6 +62,10 @@ class ChargingStationState extends State<ChargingStation> {
     // if Permission is granted, map gets initialised
   }
 
+  void _moveToLocation(LatLng point) {
+    moveToLocation(mapController, selectedFromList, point);
+  }
+
   @override
   Widget build(BuildContext context) {
     return MediaQuery(
@@ -639,14 +643,6 @@ class ChargingStationState extends State<ChargingStation> {
         return;
       }
       _initializeMapLocation();
-    }
-  }
-
-  /// moves the map to the current location
-  void _moveToLocation(LatLng point) {
-    const zoomLevel = 15.0;
-    if (selectedFromList) {
-      mapController.move(point, zoomLevel);
     }
   }
 }

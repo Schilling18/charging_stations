@@ -10,6 +10,7 @@
 //
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -54,4 +55,13 @@ void showPermissionDeniedDialog(BuildContext context) {
       );
     },
   );
+}
+
+/// moves the map to the current location
+void moveToLocation(
+    MapController mapController, bool selectedFromList, LatLng point) {
+  const zoomLevel = 15.0;
+  if (selectedFromList) {
+    mapController.move(point, zoomLevel);
+  }
 }
