@@ -9,10 +9,12 @@
 // __author__ = "Christopher Schilling"
 //
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// calculate the distance between the current location and the charging station
 double calculateDistance(Position currentPosition, LatLng stationPosition) {

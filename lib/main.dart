@@ -58,8 +58,21 @@ class ChargingStationState extends State<ChargingStation> {
   void initState() {
     super.initState();
     mapController = MapController();
-    _checkLocationPermission();
-    // if Permission is granted, map gets initialised
+    _initialize();
+  }
+
+  /// An async method to handle initialization logic
+  Future<void> _initialize() async {
+    final permissionStatus = await _checkLocationPermission();
+
+    if (permissionStatus == 1) {
+      _initializeMapLocation();
+    } else {
+      if (mounted) {
+        showPermissionDeniedDialog(context);
+        _initializeMapLocation();
+      }
+    }
   }
 
   void _moveToLocation(LatLng point) {
@@ -93,11 +106,8 @@ class ChargingStationState extends State<ChargingStation> {
                         .map((station) {
                       bool isAvailable = station.evses.values
                           .any((evse) => evse.status == 'AVAILABLE');
-
-                      // Setting: Icon-Color
                       Color iconColor =
                           isAvailable ? Colors.green : Colors.grey;
-
                       return Marker(
                         width: 40.0,
                         height: 40.0,
@@ -628,21 +638,15 @@ class ChargingStationState extends State<ChargingStation> {
   }
 
   /// Checks and requests location permission
-  void _checkLocationPermission() async {
+  Future<int> _checkLocationPermission() async {
     var status = await Permission.locationWhenInUse.status;
     if (status.isDenied) {
       status = await Permission.locationWhenInUse.request();
     }
     if (status.isGranted) {
-      _initializeMapLocation();
+      return 1;
     } else {
-      if (mounted) {
-        showPermissionDeniedDialog(context);
-        _initializeMapLocation();
-      } else {
-        return;
-      }
-      _initializeMapLocation();
+      return 0;
     }
   }
 }
