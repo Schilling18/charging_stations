@@ -9,7 +9,6 @@
 // __author__ = "Christopher Schilling"
 //
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -65,5 +64,18 @@ void moveToLocation(
   const zoomLevel = 15.0;
   if (selectedFromList) {
     mapController.move(point, zoomLevel);
+  }
+}
+
+/// Checks and requests location permission
+Future<int> checkLocationPermission() async {
+  var status = await Permission.locationWhenInUse.status;
+  if (status.isDenied) {
+    status = await Permission.locationWhenInUse.request();
+  }
+  if (status.isGranted) {
+    return 1;
+  } else {
+    return 0;
   }
 }

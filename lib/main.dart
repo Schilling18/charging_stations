@@ -14,7 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'api.dart';
 import 'functions.dart';
@@ -63,7 +62,7 @@ class ChargingStationState extends State<ChargingStation> {
 
   /// An async method to handle initialization logic
   Future<void> _initialize() async {
-    final permissionStatus = await _checkLocationPermission();
+    final permissionStatus = await checkLocationPermission();
 
     if (permissionStatus == 1) {
       _initializeMapLocation();
@@ -634,19 +633,6 @@ class ChargingStationState extends State<ChargingStation> {
       if (kDebugMode) {
         print('Error: $e');
       }
-    }
-  }
-
-  /// Checks and requests location permission
-  Future<int> _checkLocationPermission() async {
-    var status = await Permission.locationWhenInUse.status;
-    if (status.isDenied) {
-      status = await Permission.locationWhenInUse.request();
-    }
-    if (status.isGranted) {
-      return 1;
-    } else {
-      return 0;
     }
   }
 }
