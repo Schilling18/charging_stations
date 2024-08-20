@@ -37,7 +37,6 @@ String formatDistance(double distance) {
 
 /// Displays an error message if location permission is denied
 void showPermissionDeniedDialog(BuildContext context) {
-  // Synchronous call
   showDialog(
     context: context,
     builder: (BuildContext context) {

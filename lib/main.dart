@@ -62,14 +62,33 @@ class ChargingStationState extends State<ChargingStation> {
 
   /// An async method to handle initialization logic
   Future<void> _initialize() async {
-    final permissionStatus = await checkLocationPermission();
+    LatLng initialPosition = const LatLng(52.390568, 13.064472);
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    Position? position;
 
-    if (permissionStatus == 1) {
-      _initializeMapLocation();
-    } else {
-      if (mounted) {
-        showPermissionDeniedDialog(context);
-        _initializeMapLocation();
+    if (serviceEnabled) {
+      try {
+        position = await Geolocator.getCurrentPosition();
+        initialPosition = LatLng(position.latitude, position.longitude);
+      } catch (e) {
+        initialPosition = const LatLng(52.390568, 13.064472);
+      }
+    }
+
+    setState(() {
+      mapController.move(initialPosition, 12.0);
+      currentPosition = position;
+    });
+
+    final apiService = ApiService();
+    try {
+      final stations = await apiService.fetchChargingStations();
+      setState(() {
+        chargingStations = stations;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error: $e');
       }
     }
   }
@@ -600,39 +619,5 @@ class ChargingStationState extends State<ChargingStation> {
         ),
       ),
     );
-  }
-
-  /// Initializes map with current location if available
-  void _initializeMapLocation() async {
-    LatLng initialPosition = const LatLng(52.390568, 13.064472);
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (serviceEnabled) {
-      try {
-        Position position = await Geolocator.getCurrentPosition();
-        initialPosition = LatLng(position.latitude, position.longitude);
-        currentPosition = position;
-      } catch (e) {
-        initialPosition = const LatLng(52.390568, 13.064472);
-        currentPosition = null;
-      }
-    } else {
-      initialPosition = const LatLng(52.390568, 13.064472);
-      currentPosition = null;
-    }
-    setState(() {
-      mapController.move(initialPosition, 12.0);
-    });
-
-    final apiService = ApiService();
-    try {
-      final stations = await apiService.fetchChargingStations();
-      setState(() {
-        chargingStations = stations;
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error: $e');
-      }
-    }
   }
 }
