@@ -128,7 +128,7 @@ class ApiService {
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
-      throw Exception('Error: ${response.reasonPhrase}');
+      throw Exception('Error: ${response.reasonPhrase}, No API connection ');
     }
   }
 }

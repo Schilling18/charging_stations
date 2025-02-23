@@ -1,10 +1,10 @@
 // Created 14.03.2024 by Christopher Schilling
-// Last Modified 20.08.2024
+// Last Modified 24.02.2025
 //
 // The file builds the visuals of the charging station app. It also implements
 // some helper functions
 //
-// __version__ = "1.1.0"
+// __version__ = "1.1.1"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -87,9 +87,48 @@ class ChargingStationState extends State<ChargingStation> {
         chargingStations = stations;
       });
     } catch (e) {
+      // Handle API fetch failure
       if (kDebugMode) {
-        print('Error: $e');
+        print('Error fetching data: $e');
       }
+      // Show manual charging station for presenting (fallback)
+      setState(() {
+        chargingStations = []; // Clear existing stations
+
+        // Beispielhafte EVSE-Daten
+        Map<String, EvseInfo> evsesMap = {
+          'evse_1': EvseInfo(
+            evseNumber: 'evse_1',
+            maxPower: 22, // kW
+            status: 'AVAILABLE',
+            illegallyParked: false,
+          ),
+          'evse_2': EvseInfo(
+            evseNumber: 'evse_2',
+            maxPower: 50, // Schnelllader
+            status: 'CHARGING',
+            illegallyParked: false,
+          ),
+          'evse_3': EvseInfo(
+            evseNumber: 'evse_3',
+            maxPower: 11, // Langsamerer Lader
+            status: 'AVAILABLE',
+            illegallyParked: true, // Blockiert
+          ),
+        };
+
+        // Manuelle Ladesäule hinzufügen
+        chargingStations.add(ChargingStationInfo(
+          id: 'manual_1',
+          address: 'Test Ladesäule',
+          city: 'Potsdam',
+          coordinates: const LatLng(52.4, 13.1),
+          freechargers: evsesMap.values
+              .where((evse) => evse.status == 'AVAILABLE')
+              .length,
+          evses: evsesMap,
+        ));
+      });
     }
   }
 
