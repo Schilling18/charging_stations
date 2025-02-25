@@ -4,7 +4,7 @@
 // The file converts and filters the information from the API
 // into a usable entity
 //
-// __version__ = "1.0.1"
+// __version__ = "1.0.0"
 //
 // __author__ = "Christopher Schilling"
 //
