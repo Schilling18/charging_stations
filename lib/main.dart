@@ -3,7 +3,7 @@
 //
 // The file builds the visuals of the charging station app.
 //
-// __version__ = "1.1.5"
+// __version__ = "1.2.0"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -63,10 +63,10 @@ class ChargingStationState extends State<ChargingStation> {
     _initialize();
   }
 
-  void _loadFavorites() async {
-    final favs = await loadFavorites();
+  Future<void> _loadFavorites() async {
+    _favorites = await loadFavorites();
     setState(() {
-      _favorites = favs;
+      _favorites = _favorites;
     });
   }
 
@@ -295,6 +295,7 @@ class ChargingStationState extends State<ChargingStation> {
                                       _favorites.add(stationId);
                                     }
                                   });
+                                  saveFavorites(_favorites);
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor:
