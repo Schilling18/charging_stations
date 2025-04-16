@@ -325,10 +325,13 @@ class ChargingStationState extends State<ChargingStation> {
                   ),
                   const SizedBox(height: 10.0),
                   if (currentPosition != null)
-                    Text(
-                      formatDistance(calculateDistance(
-                          currentPosition!, selectedStation!.coordinates)),
-                      style: const TextStyle(fontSize: 20.0),
+                    Center(
+                      child: Text(
+                        'Entfernung: ${formatDistance(calculateDistance(currentPosition!, selectedStation!.coordinates))}',
+                        style: const TextStyle(
+                          fontSize: 20.0,
+                        ),
+                      ),
                     ),
                   const SizedBox(height: 10.0),
                   Expanded(
@@ -732,7 +735,7 @@ class ChargingStationState extends State<ChargingStation> {
                       style: TextStyle(
                         fontSize: 24.0,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Colors.black,
                       ),
                     ),
                     IconButton(
@@ -747,7 +750,7 @@ class ChargingStationState extends State<ChargingStation> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Divider(color: Colors.white70),
+                const Divider(color: Colors.white24),
                 const SizedBox(height: 10),
                 // Favoritenliste
                 Expanded(
@@ -755,7 +758,7 @@ class ChargingStationState extends State<ChargingStation> {
                       ? const Center(
                           child: Text(
                             "Keine Favoriten vorhanden.",
-                            style: TextStyle(color: Colors.white, fontSize: 18),
+                            style: TextStyle(color: Colors.black, fontSize: 18),
                           ),
                         )
                       : ListView.separated(
@@ -785,14 +788,14 @@ class ChargingStationState extends State<ChargingStation> {
                                 station.address,
                                 style: const TextStyle(
                                   fontSize: 21.0,
-                                  color: Colors.white,
+                                  color: Colors.black,
                                 ),
                               ),
                               subtitle: Text(
                                 subtitleText,
                                 style: const TextStyle(
                                   fontSize: 17.0,
-                                  color: Colors.white70,
+                                  color: Colors.black,
                                 ),
                               ),
                               onTap: () {
