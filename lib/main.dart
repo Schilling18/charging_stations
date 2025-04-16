@@ -3,7 +3,7 @@
 //
 // The file builds the visuals of the charging station app.
 //
-// __version__ = "1.1.4"
+// __version__ = "1.1.5"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -83,6 +83,8 @@ class ChargingStationState extends State<ChargingStation> {
       }
     }
 
+    if (!mounted) return; // ← prüft ob Widget noch aktiv ist
+
     setState(() {
       mapController.move(initialPosition, 12.0);
       currentPosition = position;
@@ -91,16 +93,18 @@ class ChargingStationState extends State<ChargingStation> {
     final apiService = ApiService();
     try {
       final stations = await apiService.fetchChargingStations();
+      if (!mounted) return;
+
       setState(() {
         chargingStations = stations;
       });
     } catch (e) {
-      // Handle API fetch failure
       if (kDebugMode) {
         print('Error fetching data: $e');
       }
+      if (!mounted) return;
       setState(() {
-        chargingStations = []; // Clear existing stations
+        chargingStations = [];
       });
     }
   }
