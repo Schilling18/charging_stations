@@ -1,10 +1,9 @@
 // Created 14.03.2024 by Christopher Schilling
-// Last Modified 24.02.2025
+// Last Modified 16.04.2025
 //
-// The file builds the visuals of the charging station app. It also implements
-// some helper functions
+// The file builds the visuals of the charging station app.
 //
-// __version__ = "1.1.1"
+// __version__ = "1.1.2"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -91,43 +90,8 @@ class ChargingStationState extends State<ChargingStation> {
       if (kDebugMode) {
         print('Error fetching data: $e');
       }
-      // Show manual charging station for presenting (fallback)
       setState(() {
         chargingStations = []; // Clear existing stations
-
-        // Beispielhafte EVSE-Daten
-        Map<String, EvseInfo> evsesMap = {
-          'evse_1': EvseInfo(
-            evseNumber: 'evse_1',
-            maxPower: 22, // kW
-            status: 'AVAILABLE',
-            illegallyParked: false,
-          ),
-          'evse_2': EvseInfo(
-            evseNumber: 'evse_2',
-            maxPower: 50, // Schnelllader
-            status: 'CHARGING',
-            illegallyParked: false,
-          ),
-          'evse_3': EvseInfo(
-            evseNumber: 'evse_3',
-            maxPower: 11, // Langsamerer Lader
-            status: 'AVAILABLE',
-            illegallyParked: true, // Blockiert
-          ),
-        };
-
-        // Manuelle Ladesäule hinzufügen
-        chargingStations.add(ChargingStationInfo(
-          id: 'manual_1',
-          address: 'Test Ladesäule',
-          city: 'Potsdam',
-          coordinates: const LatLng(52.4, 13.1),
-          freechargers: evsesMap.values
-              .where((evse) => evse.status == 'AVAILABLE')
-              .length,
-          evses: evsesMap,
-        ));
       });
     }
   }
@@ -261,7 +225,8 @@ class ChargingStationState extends State<ChargingStation> {
                               ElevatedButton(
                                 onPressed: () {
                                   launchUrl(Uri.parse(
-                                      'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(selectedStation!.address)}'));
+                                    'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(selectedStation!.address)}',
+                                  ));
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.blue,
@@ -284,6 +249,30 @@ class ChargingStationState extends State<ChargingStation> {
                               ),
                               const SizedBox(width: 10.0),
                               _buildAvailabilityButton(selectedStation!),
+                              const SizedBox(width: 10.0),
+                              ElevatedButton(
+                                onPressed: () {
+                                  // Hier später die Favoriten-Logik einbauen
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                    vertical: 8.0,
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Favoriten',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
