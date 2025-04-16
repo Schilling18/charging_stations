@@ -3,7 +3,7 @@
 //
 // The file builds the visuals of the charging station app.
 //
-// __version__ = "1.1.3"
+// __version__ = "1.1.4"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -56,7 +56,9 @@ class ChargingStationState extends State<ChargingStation> {
   @override
   void initState() {
     super.initState();
+    mapController = MapController();
     _loadFavorites();
+    _initialize();
   }
 
   void _loadFavorites() async {
