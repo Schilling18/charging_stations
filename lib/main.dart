@@ -44,9 +44,11 @@ class ChargingStation extends StatefulWidget {
 
 class ChargingStationState extends State<ChargingStation> {
   ChargingStationState();
+
   ChargingStationInfo? selectedStation;
   bool isOverlayVisible = false;
   bool selectedFromList = false;
+  bool showFavoritesOverlay = false;
   late MapController mapController;
   TextEditingController searchController = TextEditingController();
   Position? currentPosition;
@@ -120,8 +122,9 @@ class ChargingStationState extends State<ChargingStation> {
       child: Scaffold(
         body: Stack(
           children: [
+            // Karte
             AbsorbPointer(
-              absorbing: isOverlayVisible,
+              absorbing: isOverlayVisible || showFavoritesOverlay,
               child: FlutterMap(
                 mapController: mapController,
                 options: const MapOptions(
@@ -165,14 +168,28 @@ class ChargingStationState extends State<ChargingStation> {
                 ],
               ),
             ),
+
+            // Station Details
             if (selectedStation != null) _buildStationDetails(),
+
+            // Such-Overlay
             if (isOverlayVisible) _buildSearchOverlay(),
-            if (!isOverlayVisible) _buildSearchButton(),
+
+            // Favoriten-Overlay
+            if (showFavoritesOverlay) _buildFavoritesOverlay(),
+
+            // Such-Button (nur sichtbar wenn kein Overlay aktiv ist)
+            if (!isOverlayVisible && !showFavoritesOverlay)
+              _buildSearchButton(),
           ],
         ),
-        bottomNavigationBar: (selectedStation == null && !isOverlayVisible)
+
+        // Bottom Bar (nur wenn keine Details und keine Overlays aktiv)
+        bottomNavigationBar: (selectedStation == null &&
+                !isOverlayVisible &&
+                !showFavoritesOverlay)
             ? _buildBottomBar()
-            : null, // Bottom bar is hidden when the station details or overlay are visible
+            : null,
       ),
     );
   }
@@ -610,10 +627,13 @@ class ChargingStationState extends State<ChargingStation> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
-            // Button für "Gespeichert"
+            // Button für "Favoriten"
             ElevatedButton(
               onPressed: () {
-                // Aktion für "Gespeichert"-Button
+                // Setze den Status für die Anzeige der Favoriten
+                setState(() {
+                  showFavoritesOverlay = !showFavoritesOverlay;
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -650,9 +670,10 @@ class ChargingStationState extends State<ChargingStation> {
                 ),
               ),
             ),
+            // Button für "Hilfe"
             ElevatedButton(
               onPressed: () {
-                // Aktion für "Einstellungen"-Button
+                // Aktion für "Hilfe"-Button
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -670,6 +691,124 @@ class ChargingStationState extends State<ChargingStation> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFavoritesOverlay() {
+    final favoriteStations = chargingStations
+        .where((station) => _favorites.contains(station.id))
+        .toList();
+
+    if (currentPosition != null) {
+      favoriteStations.sort((a, b) =>
+          calculateDistance(currentPosition!, a.coordinates)
+              .compareTo(calculateDistance(currentPosition!, b.coordinates)));
+    } else {
+      favoriteStations.sort((a, b) => a.address.compareTo(b.address));
+    }
+
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Material(
+        color: Colors.grey.withOpacity(1),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Überschrift + Favoriten-Schließen-Button in einer Zeile
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Favoriten",
+                      style: TextStyle(
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close,
+                          color: Colors.white, size: 28),
+                      onPressed: () {
+                        setState(() {
+                          showFavoritesOverlay = false;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                const Divider(color: Colors.white70),
+                const SizedBox(height: 10),
+                // Favoritenliste
+                Expanded(
+                  child: favoriteStations.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "Keine Favoriten vorhanden.",
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                        )
+                      : ListView.separated(
+                          itemCount: favoriteStations.length,
+                          separatorBuilder: (_, __) =>
+                              const Divider(color: Colors.white24),
+                          itemBuilder: (context, index) {
+                            final station = favoriteStations[index];
+                            int availableCount = station.evses.values
+                                .where((evse) => evse.status == 'AVAILABLE')
+                                .length;
+
+                            String subtitleText = '';
+                            if (currentPosition != null) {
+                              double distance = calculateDistance(
+                                  currentPosition!, station.coordinates);
+                              subtitleText =
+                                  '${formatDistance(distance)} entfernt, ';
+                            }
+
+                            subtitleText += availableCount == 1
+                                ? '1 Ladesäule frei'
+                                : '$availableCount Ladesäulen frei';
+
+                            return ListTile(
+                              title: Text(
+                                station.address,
+                                style: const TextStyle(
+                                  fontSize: 21.0,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              subtitle: Text(
+                                subtitleText,
+                                style: const TextStyle(
+                                  fontSize: 17.0,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  selectedStation = station;
+                                  showFavoritesOverlay = false;
+                                  selectedFromList = true;
+                                });
+                                _moveToLocation(station.coordinates);
+                              },
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
