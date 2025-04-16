@@ -3,7 +3,7 @@
 //
 // The file builds the visuals of the charging station app.
 //
-// __version__ = "1.1.2"
+// __version__ = "1.1.3"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -51,12 +51,19 @@ class ChargingStationState extends State<ChargingStation> {
   TextEditingController searchController = TextEditingController();
   Position? currentPosition;
   List<ChargingStationInfo> chargingStations = [];
+  Set<String> _favorites = {};
 
   @override
   void initState() {
     super.initState();
-    mapController = MapController();
-    _initialize();
+    _loadFavorites();
+  }
+
+  void _loadFavorites() async {
+    final favs = await loadFavorites();
+    setState(() {
+      _favorites = favs;
+    });
   }
 
   /// An async method to handle initialization logic
@@ -166,6 +173,9 @@ class ChargingStationState extends State<ChargingStation> {
 
   /// Builds the station details view
   Widget _buildStationDetails() {
+    final stationId = selectedStation!.id.toString();
+    final isFav = isFavorite(_favorites, stationId);
+
     return Positioned(
       bottom: 0,
       left: 0,
@@ -252,10 +262,20 @@ class ChargingStationState extends State<ChargingStation> {
                               const SizedBox(width: 10.0),
                               ElevatedButton(
                                 onPressed: () {
-                                  // Hier später die Favoriten-Logik einbauen
+                                  setState(() {
+                                    // Den Favoriten-Status ändern und die Liste aktualisieren
+                                    if (isFav) {
+                                      // Entfernen
+                                      _favorites.remove(stationId);
+                                    } else {
+                                      // Hinzufügen
+                                      _favorites.add(stationId);
+                                    }
+                                  });
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
+                                  backgroundColor:
+                                      isFav ? Colors.green : Colors.grey,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
@@ -264,9 +284,9 @@ class ChargingStationState extends State<ChargingStation> {
                                     vertical: 8.0,
                                   ),
                                 ),
-                                child: const Text(
-                                  'Favoriten',
-                                  style: TextStyle(
+                                child: Text(
+                                  isFav ? 'Favorit' : 'Favorisieren',
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16.0,
                                     fontWeight: FontWeight.bold,

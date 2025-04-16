@@ -1,10 +1,10 @@
 // Created 14.03.2024 by Christopher Schilling
-// Last Modified 20.08.2024
+// Last Modified 16.04.2024
 //
 // The file builds the visuals of the charging station app. It also implements
 // some helper functions
 //
-// __version__ = "1.1.0"
+// __version__ = "1.2.0"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -14,6 +14,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// calculate the distance between the current location and the charging station
 double calculateDistance(Position currentPosition, LatLng stationPosition) {
@@ -77,4 +78,41 @@ Future<int> checkLocationPermission() async {
   } else {
     return 0;
   }
+}
+
+/// -------------------------------
+/// FAVORITEN-VERWALTUNG
+/// -------------------------------
+
+const String _favoritesKey = 'favorites';
+
+/// Lädt gespeicherte Favoriten aus SharedPreferences
+Future<Set<String>> loadFavorites() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getStringList(_favoritesKey)?.toSet() ?? {};
+}
+
+/// Speichert die übergebenen Favoriten dauerhaft
+Future<void> saveFavorites(Set<String> favorites) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setStringList(_favoritesKey, favorites.toList());
+}
+
+/// Fügt eine ID zu den Favoriten hinzu oder entfernt sie
+Future<Set<String>> toggleFavorite(
+    Set<String> currentFavorites, String id) async {
+  final updated = Set<String>.from(currentFavorites);
+  if (updated.contains(id)) {
+    updated.remove(id);
+  } else {
+    updated.add(id);
+  }
+
+  await saveFavorites(updated);
+  return updated;
+}
+
+/// Prüft, ob eine ID ein Favorit ist
+bool isFavorite(Set<String> favorites, String id) {
+  return favorites.contains(id);
 }
