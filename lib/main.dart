@@ -3,7 +3,7 @@
 //
 // The file builds the visuals of the charging station app.
 //
-// __version__ = "1.2.3"
+// __version__ = "1.2.4"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -286,7 +286,7 @@ class ChargingStationState extends State<ChargingStation> {
                                   ));
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.black,
+                                  backgroundColor: Colors.blue,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
@@ -394,7 +394,7 @@ class ChargingStationState extends State<ChargingStation> {
                                       children: [
                                         Text(
                                           evse.status == 'AVAILABLE'
-                                              ? 'Frei'
+                                              ? 'Verfügbar'
                                               : 'Besetzt',
                                           style: const TextStyle(
                                             fontSize: 20.0,
@@ -857,6 +857,7 @@ class ChargingStationState extends State<ChargingStation> {
   }
 
   Widget _buildSettingsOverlay() {
+    String selectedLanguage = 'Deutsch';
     return Positioned(
       top: 0,
       left: 0,
@@ -896,6 +897,50 @@ class ChargingStationState extends State<ChargingStation> {
                 const SizedBox(height: 10),
                 const Divider(color: Colors.white24),
                 const SizedBox(height: 10),
+
+                // Kategorie: Sprache
+                const Text(
+                  'Sprache',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: selectedLanguage,
+                      isExpanded: true,
+                      icon: const Icon(Icons.arrow_drop_down),
+                      items: ['Deutsch', 'Englisch', 'Französisch', 'Spanisch']
+                          .map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value,
+                              style: const TextStyle(color: Colors.black)),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            selectedLanguage = newValue;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+                // Weitere Einstellungsoptionen können hier ergänzt werden
               ],
             ),
           ),
@@ -919,7 +964,7 @@ class ChargingStationState extends State<ChargingStation> {
       'Typ2',
       'CCS',
       'CHAdeMO',
-      'Schuko',
+      'SchuKo',
       'Tesla',
       'Andere',
     ];
