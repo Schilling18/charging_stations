@@ -3,7 +3,7 @@
 //
 // The file builds the visuals of the charging station app.
 //
-// __version__ = "1.2.4"
+// __version__ = "1.2.5"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -858,6 +858,8 @@ class ChargingStationState extends State<ChargingStation> {
 
   Widget _buildSettingsOverlay() {
     String selectedLanguage = 'Deutsch';
+    String selectedTheme = 'Dunkel';
+
     return Positioned(
       top: 0,
       left: 0,
@@ -898,7 +900,7 @@ class ChargingStationState extends State<ChargingStation> {
                 const Divider(color: Colors.white24),
                 const SizedBox(height: 10),
 
-                // Kategorie: Sprache
+                // Sprache
                 const Text(
                   'Sprache',
                   style: TextStyle(
@@ -908,7 +910,6 @@ class ChargingStationState extends State<ChargingStation> {
                   ),
                 ),
                 const SizedBox(height: 8),
-
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
@@ -940,7 +941,94 @@ class ChargingStationState extends State<ChargingStation> {
                 ),
 
                 const SizedBox(height: 20),
-                // Weitere Einstellungsoptionen können hier ergänzt werden
+
+                // Design (Theme Mode)
+                const Text(
+                  'Design',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: selectedTheme,
+                      isExpanded: true,
+                      icon: const Icon(Icons.arrow_drop_down),
+                      items: ['Hell', 'Dunkel'].map((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value,
+                              style: const TextStyle(color: Colors.black)),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setState(() {
+                            selectedTheme = newValue;
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Impressum
+                const Text(
+                  'Rechtliches',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    // Impressum anzeigen
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  child: const Text(
+                    'Impressum',
+                    style: TextStyle(color: Colors.black, fontSize: 16),
+                  ),
+                ),
+
+                const Spacer(),
+
+                // Anwenden
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      showSettingsOverlay = false;
+                      // Sprache/Thema übernehmen
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    'Anwenden',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                ),
               ],
             ),
           ),
