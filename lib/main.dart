@@ -44,12 +44,14 @@ class ChargingStation extends StatefulWidget {
 
 class ChargingStationState extends State<ChargingStation> {
   ChargingStationState();
-
   ChargingStationInfo? selectedStation;
+
   bool isOverlayVisible = false;
   bool selectedFromList = false;
   bool showFavoritesOverlay = false;
   bool showSettingsOverlay = false;
+  bool showFilterOverlay = false;
+
   late MapController mapController;
   TextEditingController searchController = TextEditingController();
   Position? currentPosition;
@@ -127,7 +129,8 @@ class ChargingStationState extends State<ChargingStation> {
             AbsorbPointer(
               absorbing: isOverlayVisible ||
                   showFavoritesOverlay ||
-                  showSettingsOverlay,
+                  showSettingsOverlay ||
+                  showFilterOverlay,
               child: FlutterMap(
                 mapController: mapController,
                 options: const MapOptions(
@@ -184,16 +187,21 @@ class ChargingStationState extends State<ChargingStation> {
             // Einstellungen-Overlay
             if (showSettingsOverlay) _buildSettingsOverlay(),
 
+            // Filter-Overlay
+            if (showFilterOverlay) _buildFilterOverlay(),
+
             // Such-Button (nur sichtbar wenn kein Overlay aktiv ist)
             if (!isOverlayVisible &&
                 !showFavoritesOverlay &&
-                !showSettingsOverlay)
+                !showSettingsOverlay &&
+                !showFilterOverlay)
               _buildSearchButton(),
 
-            // Reload-Button (sichtbar wenn kein Overlay aktiv)
+            // Reload-Button (nur sichtbar wenn kein Overlay aktiv ist)
             if (!isOverlayVisible &&
                 !showFavoritesOverlay &&
-                !showSettingsOverlay)
+                !showSettingsOverlay &&
+                !showFilterOverlay)
               _buildReloadButton(),
           ],
         ),
@@ -202,7 +210,8 @@ class ChargingStationState extends State<ChargingStation> {
         bottomNavigationBar: (selectedStation == null &&
                 !isOverlayVisible &&
                 !showFavoritesOverlay &&
-                !showSettingsOverlay)
+                !showSettingsOverlay &&
+                !showFilterOverlay)
             ? _buildBottomBar()
             : null,
       ),
@@ -649,9 +658,12 @@ class ChargingStationState extends State<ChargingStation> {
             // Button für "Favoriten"
             ElevatedButton(
               onPressed: () {
-                // Setze den Status für die Anzeige der Favoriten
                 setState(() {
+                  // Nur Favoriten anzeigen, andere schließen
                   showFavoritesOverlay = !showFavoritesOverlay;
+                  isOverlayVisible = false;
+                  showSettingsOverlay = false;
+                  showFilterOverlay = false;
                 });
               },
               style: ElevatedButton.styleFrom(
@@ -669,14 +681,16 @@ class ChargingStationState extends State<ChargingStation> {
                 ),
               ),
             ),
+
             // Button für "Einstellungen"
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  // Alle anderen Fenster schließen
+                  // Nur Einstellungen anzeigen, andere schließen
                   isOverlayVisible = false;
                   showFavoritesOverlay = false;
                   showSettingsOverlay = true;
+                  showFilterOverlay = false;
                 });
               },
               style: ElevatedButton.styleFrom(
@@ -691,10 +705,17 @@ class ChargingStationState extends State<ChargingStation> {
                 style: TextStyle(fontSize: 16.0, color: Colors.black),
               ),
             ),
-            // Button für "Hilfe"
+
+            // Button für "Filter"
             ElevatedButton(
               onPressed: () {
-                // Aktion für "Filter"-Button
+                setState(() {
+                  // Nur Filter anzeigen, andere schließen
+                  isOverlayVisible = false;
+                  showFavoritesOverlay = false;
+                  showSettingsOverlay = false;
+                  showFilterOverlay = true;
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -875,6 +896,55 @@ class ChargingStationState extends State<ChargingStation> {
                 const SizedBox(height: 10),
                 const Divider(color: Colors.white24),
                 const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterOverlay() {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Material(
+        color: Colors.grey.withOpacity(1),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Überschrift + Schließen-Button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Filter",
+                      style: TextStyle(
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close,
+                          color: Colors.white, size: 28),
+                      onPressed: () {
+                        setState(() {
+                          showFilterOverlay = false;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                const Divider(color: Colors.white24),
+                const SizedBox(height: 10),
+                // Hier kann später dein Filter-Content rein
               ],
             ),
           ),
