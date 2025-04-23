@@ -3,7 +3,7 @@
 //
 // The file builds the visuals of the charging station app.
 //
-// __version__ = "1.2.1"
+// __version__ = "1.2.3"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -286,7 +286,7 @@ class ChargingStationState extends State<ChargingStation> {
                                   ));
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
+                                  backgroundColor: Colors.black,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8.0),
                                   ),
@@ -905,51 +905,163 @@ class ChargingStationState extends State<ChargingStation> {
   }
 
   Widget _buildFilterOverlay() {
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: Material(
-        color: Colors.grey.withOpacity(1),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Überschrift + Schließen-Button
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    // Ladegeschwindigkeit Auswahl
+    final List<String> speedOptions = [
+      'Alle',
+      'Ab 50kW',
+      'Ab 150kW',
+      'Ab 300kW'
+    ];
+    String selectedSpeed = 'Alle';
+
+    // Stecker Auswahl
+    final List<String> plugOptions = [
+      'Typ2',
+      'CCS',
+      'CHAdeMO',
+      'Schuko',
+      'Tesla',
+      'Andere',
+    ];
+    Set<String> selectedPlugs = {};
+
+    return StatefulBuilder(
+      builder: (context, setOverlayState) {
+        return Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: Material(
+            color: Colors.grey.withOpacity(1),
+            child: SafeArea(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Überschrift + Schließen-Button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Filter",
+                          style: TextStyle(
+                            fontSize: 24.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close,
+                              color: Colors.white, size: 28),
+                          onPressed: () {
+                            setState(() {
+                              showFilterOverlay = false;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    const Divider(color: Colors.white24),
+                    const SizedBox(height: 10),
+
+                    // Kategorie: Ladegeschwindigkeit
                     const Text(
-                      "Filter",
+                      'Ladegeschwindigkeit',
                       style: TextStyle(
-                        fontSize: 24.0,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.close,
-                          color: Colors.white, size: 28),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 10.0,
+                      children: speedOptions.map((option) {
+                        final isSelected = selectedSpeed == option;
+                        return ChoiceChip(
+                          label: Text(option),
+                          selected: isSelected,
+                          selectedColor: Colors.green,
+                          backgroundColor: Colors.white,
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
+                          onSelected: (_) {
+                            setOverlayState(() {
+                              selectedSpeed = option;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Kategorie: Stecker
+                    const Text(
+                      'Stecker',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 10.0,
+                      children: plugOptions.map((plug) {
+                        final isSelected = selectedPlugs.contains(plug);
+                        return FilterChip(
+                          label: Text(plug),
+                          selected: isSelected,
+                          selectedColor: Colors.green,
+                          backgroundColor: Colors.white,
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
+                          onSelected: (selected) {
+                            setOverlayState(() {
+                              if (selected) {
+                                selectedPlugs.add(plug);
+                              } else {
+                                selectedPlugs.remove(plug);
+                              }
+                            });
+                          },
+                          // Auch hier wird das Standard-Häkchen angezeigt
+                        );
+                      }).toList(),
+                    ),
+
+                    const Spacer(),
+
+                    // Button zum Anwenden der Filter
+                    ElevatedButton(
                       onPressed: () {
                         setState(() {
                           showFilterOverlay = false;
                         });
                       },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text(
+                        'Filter anwenden',
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                const Divider(color: Colors.white24),
-                const SizedBox(height: 10),
-                // Hier kann später dein Filter-Content rein
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
