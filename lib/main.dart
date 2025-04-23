@@ -1,9 +1,9 @@
 // Created 14.03.2024 by Christopher Schilling
-// Last Modified 16.04.2025
+// Last Modified 23.04.2025
 //
 // The file builds the visuals of the charging station app.
 //
-// __version__ = "1.2.0"
+// __version__ = "1.2.1"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -49,6 +49,7 @@ class ChargingStationState extends State<ChargingStation> {
   bool isOverlayVisible = false;
   bool selectedFromList = false;
   bool showFavoritesOverlay = false;
+  bool showSettingsOverlay = false;
   late MapController mapController;
   TextEditingController searchController = TextEditingController();
   Position? currentPosition;
@@ -124,7 +125,9 @@ class ChargingStationState extends State<ChargingStation> {
           children: [
             // Karte
             AbsorbPointer(
-              absorbing: isOverlayVisible || showFavoritesOverlay,
+              absorbing: isOverlayVisible ||
+                  showFavoritesOverlay ||
+                  showSettingsOverlay,
               child: FlutterMap(
                 mapController: mapController,
                 options: const MapOptions(
@@ -178,16 +181,28 @@ class ChargingStationState extends State<ChargingStation> {
             // Favoriten-Overlay
             if (showFavoritesOverlay) _buildFavoritesOverlay(),
 
+            // Einstellungen-Overlay
+            if (showSettingsOverlay) _buildSettingsOverlay(),
+
             // Such-Button (nur sichtbar wenn kein Overlay aktiv ist)
-            if (!isOverlayVisible && !showFavoritesOverlay)
+            if (!isOverlayVisible &&
+                !showFavoritesOverlay &&
+                !showSettingsOverlay)
               _buildSearchButton(),
+
+            // Reload-Button (sichtbar wenn kein Overlay aktiv)
+            if (!isOverlayVisible &&
+                !showFavoritesOverlay &&
+                !showSettingsOverlay)
+              _buildReloadButton(),
           ],
         ),
 
         // Bottom Bar (nur wenn keine Details und keine Overlays aktiv)
         bottomNavigationBar: (selectedStation == null &&
                 !isOverlayVisible &&
-                !showFavoritesOverlay)
+                !showFavoritesOverlay &&
+                !showSettingsOverlay)
             ? _buildBottomBar()
             : null,
       ),
@@ -657,7 +672,12 @@ class ChargingStationState extends State<ChargingStation> {
             // Button für "Einstellungen"
             ElevatedButton(
               onPressed: () {
-                // Aktion für "Einstellungen"-Button
+                setState(() {
+                  // Alle anderen Fenster schließen
+                  isOverlayVisible = false;
+                  showFavoritesOverlay = false;
+                  showSettingsOverlay = true;
+                });
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -668,16 +688,13 @@ class ChargingStationState extends State<ChargingStation> {
               ),
               child: const Text(
                 'Einstellungen',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.black,
-                ),
+                style: TextStyle(fontSize: 16.0, color: Colors.black),
               ),
             ),
             // Button für "Hilfe"
             ElevatedButton(
               onPressed: () {
-                // Aktion für "Hilfe"-Button
+                // Aktion für "Filter"-Button
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
@@ -687,7 +704,7 @@ class ChargingStationState extends State<ChargingStation> {
                 ),
               ),
               child: const Text(
-                'Hilfe',
+                'Filter',
                 style: TextStyle(
                   fontSize: 16.0,
                   color: Colors.black,
@@ -814,6 +831,94 @@ class ChargingStationState extends State<ChargingStation> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsOverlay() {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Material(
+        color: Colors.grey.withOpacity(1),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Überschrift + Schließen-Button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Einstellungen",
+                      style: TextStyle(
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close,
+                          color: Colors.white, size: 28),
+                      onPressed: () {
+                        setState(() {
+                          showSettingsOverlay = false;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                const Divider(color: Colors.white24),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReloadButton() {
+    return Positioned(
+      bottom: 20.0, // näher an der Bottom Bar als vorher (vorher 80.0)
+      right: 16.0,
+      child: FloatingActionButton(
+        heroTag: 'reloadButton',
+        backgroundColor: Colors.white,
+        onPressed: () {
+          _initialize(); // API wird aufgerufen, um Ladesäulen neu zu laden
+        },
+        child: const Icon(
+          Icons.refresh,
+          color: Colors.black,
+        ),
+      ),
+    );
+  }
+}
+
+class ReloadButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const ReloadButton({super.key, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      bottom: 80, // über der BottomBar
+      right: 20,
+      child: FloatingActionButton(
+        onPressed: onPressed,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        shape: const CircleBorder(),
+        elevation: 4,
+        child: const Icon(Icons.refresh),
       ),
     );
   }
