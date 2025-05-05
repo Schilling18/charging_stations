@@ -93,15 +93,15 @@ class ChargingStationInfo {
 
 /// Service class for API interactions.
 class ApiService {
-  final String _baseUrl =
+  final String baseUrl =
       'https://cs1-swp.westeurope.cloudapp.azure.com:8443/chargers';
-  final String _apiKey = '6bcadbac-976e-4d6b-a593-f925fba25506';
+  final String apiKey = '6bcadbac-976e-4d6b-a593-f925fba25506';
 
   /// Fetches the list of charging stations from the API.
   Future<List<ChargingStationInfo>> fetchChargingStations() async {
     final response = await http.get(
-      Uri.parse(_baseUrl),
-      headers: {'X-Api-Key': _apiKey},
+      Uri.parse(baseUrl),
+      headers: {'X-Api-Key': apiKey},
     );
 
     if (response.statusCode == 200) {

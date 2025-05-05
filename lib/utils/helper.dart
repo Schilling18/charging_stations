@@ -1,22 +1,20 @@
 // Created 14.03.2024 by Christopher Schilling
-// Last Modified 23.04.2024
 //
-// The file builds the visuals of the charging station app. It also implements
-// some helper functions
+// The file stores logicfunctions, which are used across the project.
 //
-// __version__ = "1.2.1"
+// __version__ = "1.0.0"
 //
 // __author__ = "Christopher Schilling"
 //
 
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_map/flutter_map.dart';
 
-/// calculate the distance between the current location and the charging station
+/// Berechnet die Entfernung zwischen der aktuellen Position und einer Ladestation
 double calculateDistance(Position currentPosition, LatLng stationPosition) {
   double distanceInMeters = Geolocator.distanceBetween(
     currentPosition.latitude,
@@ -27,7 +25,7 @@ double calculateDistance(Position currentPosition, LatLng stationPosition) {
   return distanceInMeters / 1000;
 }
 
-/// Formatting the distance of the user to the charging station. (meter: if distance > 1km)
+/// Formatiert die Entfernung zur Ladestation (m, wenn < 1 km, sonst km)
 String formatDistance(double distance) {
   if (distance < 1) {
     return '${(distance * 1000).toStringAsFixed(0)} m';
@@ -36,7 +34,7 @@ String formatDistance(double distance) {
   }
 }
 
-/// Displays an error message if location permission is denied
+/// Zeigt einen Dialog an, wenn die Standortberechtigung verweigert wurde
 void showPermissionDeniedDialog(BuildContext context) {
   showDialog(
     context: context,
@@ -44,7 +42,7 @@ void showPermissionDeniedDialog(BuildContext context) {
       return AlertDialog(
         title: const Text("Standortberechtigung verweigert"),
         content: const Text(
-            "Um nahegelegene Ladestationen korrekt anzuzeigen, ist ein Standortzugriff erforderlich. Dies kann in den Einstellungen verändet werden"),
+            "Um nahegelegene Ladestationen korrekt anzuzeigen, ist ein Standortzugriff erforderlich. Dies kann in den Einstellungen geändert werden."),
         actions: <Widget>[
           TextButton(
             child: const Text("OK"),
@@ -58,7 +56,7 @@ void showPermissionDeniedDialog(BuildContext context) {
   );
 }
 
-/// moves the map to the current location
+/// Bewegt die Karte auf die aktuelle Position
 void moveToLocation(
     MapController mapController, bool selectedFromList, LatLng point) {
   const zoomLevel = 15.0;
@@ -67,16 +65,16 @@ void moveToLocation(
   }
 }
 
-/// Checks and requests location permission
+/// Überprüft und fordert die Standortberechtigung an
 Future<int> checkLocationPermission() async {
   var status = await Permission.locationWhenInUse.status;
   if (status.isDenied) {
     status = await Permission.locationWhenInUse.request();
   }
   if (status.isGranted) {
-    return 1;
+    return 1; // Berechtigung gewährt
   } else {
-    return 0;
+    return 0; // Berechtigung verweigert
   }
 }
 
@@ -88,7 +86,7 @@ Future<Set<String>> loadFavorites() async {
   return prefs.getStringList(_favoritesKey)?.toSet() ?? {};
 }
 
-/// Speichert die übergebenen Favoriten dauerhaft
+/// Speichert die übergebenen Favoriten dauerhaft in SharedPreferences
 Future<void> saveFavorites(Set<String> favorites) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setStringList(_favoritesKey, favorites.toList());
@@ -99,12 +97,12 @@ Future<Set<String>> toggleFavorite(
     Set<String> currentFavorites, String id) async {
   final updated = Set<String>.from(currentFavorites);
   if (updated.contains(id)) {
-    updated.remove(id);
+    updated.remove(id); // Entfernen, wenn bereits Favorit
   } else {
-    updated.add(id);
+    updated.add(id); // Hinzufügen, wenn nicht Favorit
   }
 
-  await saveFavorites(updated);
+  await saveFavorites(updated); // Favoriten speichern
   return updated;
 }
 
