@@ -1,12 +1,3 @@
-// Created 14.03.2024 by Christopher Schilling
-//
-// The file builds the visuals of the charging station app.
-//
-// __version__ = "1.0.0"
-//
-// __author__ = "Christopher Schilling"
-//
-
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -40,9 +31,6 @@ class MapScreenState extends State<MapScreen> {
 
   List<ChargingStationInfo> chargingStations = [];
   Set<String> favoriteIds = {};
-  List<ChargingStationInfo> get favoriteStations => chargingStations
-      .where((station) => favoriteIds.contains(station.id.toString()))
-      .toList();
 
   final LatLng defaultCoordinates = const LatLng(52.3906, 13.0645); // Potsdam
 
@@ -51,7 +39,7 @@ class MapScreenState extends State<MapScreen> {
     super.initState();
     selectedCoordinates = defaultCoordinates;
     _loadCurrentPosition();
-    _loadChargingStations();
+    _loadChargingStationsAndFavorites();
   }
 
   Future<void> _loadCurrentPosition() async {
@@ -68,14 +56,13 @@ class MapScreenState extends State<MapScreen> {
     }
   }
 
-  Future<void> _loadChargingStations() async {
+  Future<void> _loadChargingStationsAndFavorites() async {
     try {
       final stations = await ApiService().fetchChargingStations();
-      final storedFavorites = await loadFavorites();
-
+      final favs = await loadFavorites();
       setState(() {
         chargingStations = stations;
-        favoriteIds = storedFavorites;
+        favoriteIds = favs;
       });
     } catch (e) {
       setState(() {
@@ -94,15 +81,12 @@ class MapScreenState extends State<MapScreen> {
     });
   }
 
-  void _toggleFavorite(String stationId) async {
-    final updatedFavorites = await toggleFavorite(favoriteIds, stationId);
-    setState(() {
-      favoriteIds = updatedFavorites;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final favoriteStations = chargingStations
+        .where((station) => isFavorite(favoriteIds, station.id.toString()))
+        .toList();
+
     return Scaffold(
       body: isOverlayVisible
           ? _buildSearchOverlay()
@@ -230,8 +214,15 @@ class MapScreenState extends State<MapScreen> {
                         child: StationDetailsWidget(
                           selectedStation: selectedStation!,
                           currentPosition: currentPosition,
-                          isFavorite: favoriteIds.contains(selectedStation!.id),
-                          toggleFavorite: _toggleFavorite,
+                          isFavorite: isFavorite(
+                              favoriteIds, selectedStation!.id.toString()),
+                          toggleFavorite: (stationId) async {
+                            final updated =
+                                await toggleFavorite(favoriteIds, stationId);
+                            setState(() {
+                              favoriteIds = updated;
+                            });
+                          },
                           onDismiss: () {
                             setState(() {
                               selectedStation = null;

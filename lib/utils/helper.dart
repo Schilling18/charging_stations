@@ -13,6 +13,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:charging_station/models/api.dart';
 
 /// Berechnet die Entfernung zwischen der aktuellen Position und einer Ladestation
 double calculateDistance(Position currentPosition, LatLng stationPosition) {
@@ -97,12 +98,12 @@ Future<Set<String>> toggleFavorite(
     Set<String> currentFavorites, String id) async {
   final updated = Set<String>.from(currentFavorites);
   if (updated.contains(id)) {
-    updated.remove(id); // Entfernen, wenn bereits Favorit
+    updated.remove(id);
   } else {
-    updated.add(id); // Hinzufügen, wenn nicht Favorit
+    updated.add(id);
   }
 
-  await saveFavorites(updated); // Favoriten speichern
+  await saveFavorites(updated);
   return updated;
 }
 
