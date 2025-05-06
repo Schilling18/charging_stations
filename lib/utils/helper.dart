@@ -2,7 +2,7 @@
 //
 // The file stores logicfunctions, which are used across the project.
 //
-// __version__ = "1.0.0"
+// __version__ = "1.0.1"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -13,7 +13,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:charging_station/models/api.dart';
+
+const String _selectedSpeedKey = 'selected_speed';
+const String _selectedPlugsKey = 'selected_plugs';
 
 /// Berechnet die Entfernung zwischen der aktuellen Position und einer Ladestation
 double calculateDistance(Position currentPosition, LatLng stationPosition) {
@@ -110,4 +112,28 @@ Future<Set<String>> toggleFavorite(
 /// Prüft, ob eine ID ein Favorit ist
 bool isFavorite(Set<String> favorites, String id) {
   return favorites.contains(id);
+}
+
+/// Speichert die ausgewählte Ladegeschwindigkeit
+Future<void> saveSelectedSpeed(String speed) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString(_selectedSpeedKey, speed);
+}
+
+/// Speichert die ausgewählten Stecker
+Future<void> saveSelectedPlugs(Set<String> plugs) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setStringList(_selectedPlugsKey, plugs.toList());
+}
+
+/// Lädt die gespeicherte Ladegeschwindigkeit
+Future<String> loadSelectedSpeed() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getString(_selectedSpeedKey) ?? 'Alle';
+}
+
+/// Lädt die gespeicherten Stecker
+Future<Set<String>> loadSelectedPlugs() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getStringList(_selectedPlugsKey)?.toSet() ?? {};
 }

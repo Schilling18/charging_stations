@@ -1,13 +1,13 @@
 // Created 14.03.2024 by Christopher Schilling
 //
-// This file builds the filer overlay Widget.
+// This file builds the filter overlay Widget.
 //
-// __version__ = "1.0.0"
+// __version__ = "1.0.2"
 //
 // __author__ = "Christopher Schilling"
 //
-
 import 'package:flutter/material.dart';
+import 'package:charging_station/utils/helper.dart';
 
 class FilterOverlay extends StatefulWidget {
   final VoidCallback onClose;
@@ -19,7 +19,13 @@ class FilterOverlay extends StatefulWidget {
 }
 
 class _FilterOverlayState extends State<FilterOverlay> {
-  final List<String> speedOptions = ['Alle', 'Ab 50kW', 'Ab 150kW', 'Ab 300kW'];
+  final List<String> speedOptions = [
+    'Alle',
+    'Ab 50kW',
+    'Ab 100kW',
+    'Ab 200kW',
+    'Ab 300kW'
+  ];
   String selectedSpeed = 'Alle';
 
   final List<String> plugOptions = [
@@ -28,9 +34,24 @@ class _FilterOverlayState extends State<FilterOverlay> {
     'CHAdeMO',
     'SchuKo',
     'Tesla',
-    'Andere',
   ];
   Set<String> selectedPlugs = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedFilters();
+  }
+
+  Future<void> _loadSavedFilters() async {
+    final speed = await loadSelectedSpeed();
+    final plugs = await loadSelectedPlugs();
+
+    setState(() {
+      selectedSpeed = speed;
+      selectedPlugs = plugs;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,25 +98,31 @@ class _FilterOverlayState extends State<FilterOverlay> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Wrap(
-                  spacing: 10.0,
-                  children: speedOptions.map((option) {
-                    final isSelected = selectedSpeed == option;
-                    return ChoiceChip(
-                      label: Text(option),
-                      selected: isSelected,
-                      selectedColor: Colors.green,
-                      backgroundColor: Colors.white,
-                      labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black,
-                      ),
-                      onSelected: (_) {
-                        setState(() {
-                          selectedSpeed = option;
-                        });
-                      },
-                    );
-                  }).toList(),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: speedOptions.map((option) {
+                      final isSelected = selectedSpeed == option;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: ChoiceChip(
+                          label: Text(option),
+                          selected: isSelected,
+                          selectedColor: Colors.green,
+                          backgroundColor: Colors.white,
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
+                          onSelected: (_) {
+                            setState(() {
+                              selectedSpeed = option;
+                            });
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 const Text(
@@ -107,34 +134,41 @@ class _FilterOverlayState extends State<FilterOverlay> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Wrap(
-                  spacing: 10.0,
-                  children: plugOptions.map((plug) {
-                    final isSelected = selectedPlugs.contains(plug);
-                    return FilterChip(
-                      label: Text(plug),
-                      selected: isSelected,
-                      selectedColor: Colors.green,
-                      backgroundColor: Colors.white,
-                      labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black,
-                      ),
-                      onSelected: (selected) {
-                        setState(() {
-                          if (selected) {
-                            selectedPlugs.add(plug);
-                          } else {
-                            selectedPlugs.remove(plug);
-                          }
-                        });
-                      },
-                    );
-                  }).toList(),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: plugOptions.map((plug) {
+                      final isSelected = selectedPlugs.contains(plug);
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: FilterChip(
+                          label: Text(plug),
+                          selected: isSelected,
+                          selectedColor: Colors.green,
+                          backgroundColor: Colors.white,
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                selectedPlugs.add(plug);
+                              } else {
+                                selectedPlugs.remove(plug);
+                              }
+                            });
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
                 const Spacer(),
                 ElevatedButton(
-                  onPressed: () {
-                    // Hier könntest du einen Filter-Callback einbauen
+                  onPressed: () async {
+                    await saveSelectedSpeed(selectedSpeed);
+                    await saveSelectedPlugs(selectedPlugs);
                     widget.onClose();
                   },
                   style: ElevatedButton.styleFrom(
