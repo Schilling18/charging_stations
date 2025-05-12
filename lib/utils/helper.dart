@@ -2,7 +2,7 @@
 //
 // The file stores logicfunctions, which are used across the project.
 //
-// __version__ = "1.0.2"
+// __version__ = "1.0.3"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -151,5 +151,18 @@ String formatPlugType(String plugType) {
       return 'IEC_80005_3';
     default:
       return plugType;
+  }
+}
+
+IconData getPlugIcon(String plugType) {
+  switch (plugType) {
+    case 'IEC_62196_T2':
+      return Icons.ev_station; // Typ 2
+    case 'IEC_62196_T2_COMBO':
+      return Icons.flash_on; // CCS
+    case 'CHADEMO':
+      return Icons.power; // CHAdeMO
+    default:
+      return Icons.device_unknown;
   }
 }

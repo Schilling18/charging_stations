@@ -2,7 +2,7 @@
 //
 // This file builds the station details Widget.
 //
-// __version__ = "1.0.1"
+// __version__ = "1.0.2"
 //
 // __author__ = "Christopher Schilling"
 
@@ -208,12 +208,26 @@ class StationDetailsWidget extends StatelessWidget {
                                   const Spacer(),
                                   Padding(
                                     padding: const EdgeInsets.only(right: 40.0),
-                                    child: Text(
-                                      formatPlugType(evse.chargingPlug),
-                                      style: const TextStyle(
-                                        fontSize: 18.0,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                              right: 15.0),
+                                          child: Icon(
+                                            getPlugIcon(evse.chargingPlug),
+                                            size: 50.0,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        Text(
+                                          formatPlugType(evse.chargingPlug),
+                                          style: const TextStyle(
+                                            fontSize: 18.0,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
