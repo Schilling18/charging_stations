@@ -2,7 +2,7 @@
 //
 // The file stores logicfunctions, which are used across the project.
 //
-// __version__ = "1.0.1"
+// __version__ = "1.0.2"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -136,4 +136,20 @@ Future<String> loadSelectedSpeed() async {
 Future<Set<String>> loadSelectedPlugs() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getStringList(_selectedPlugsKey)?.toSet() ?? {};
+}
+
+/// Formatiert den Technischen Begriff zum geläufigen Namen
+String formatPlugType(String plugType) {
+  switch (plugType) {
+    case 'IEC_62196_T2':
+      return 'Typ2';
+    case 'IEC_62196_T2_COMBO':
+      return 'CCS';
+    case 'CHADEMO':
+      return 'CHAdeMo';
+    case 'IEC_80005_3':
+      return 'IEC_80005_3';
+    default:
+      return plugType;
+  }
 }

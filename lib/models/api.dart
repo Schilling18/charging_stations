@@ -4,7 +4,7 @@
 // The file converts and filters the information from the API
 // into a usable entity
 //
-// __version__ = "1.0.0"
+// __version__ = "1.0.1"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -20,12 +20,14 @@ class EvseInfo {
   final int maxPower;
   final String status;
   final bool illegallyParked;
+  final String chargingPlug;
 
   EvseInfo({
     required this.evseNumber,
     required this.maxPower,
     required this.status,
     required this.illegallyParked,
+    required this.chargingPlug,
   });
 }
 
@@ -73,6 +75,7 @@ class ChargingStationInfo {
           maxPower: connector['max_power'],
           status: status,
           illegallyParked: illegallyParked,
+          chargingPlug: connector['standard'],
         );
       }
     }
@@ -152,6 +155,7 @@ void main() async {
           print('  Max Power: ${evse.maxPower}');
           print('  Status: ${evse.status}');
           print('  Illegally Parked: ${evse.illegallyParked}');
+          print('Charging Plug: ${evse.chargingPlug}');
         }
       }
       if (kDebugMode) {

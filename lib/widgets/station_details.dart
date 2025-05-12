@@ -2,16 +2,14 @@
 //
 // This file builds the station details Widget.
 //
-// __version__ = "1.0.0"
+// __version__ = "1.0.1"
 //
 // __author__ = "Christopher Schilling"
-//
 
 import 'package:flutter/material.dart';
 import 'package:charging_station/models/api.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../utils/helper.dart';
 
 class StationDetailsWidget extends StatelessWidget {
@@ -99,8 +97,6 @@ class StationDetailsWidget extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 10.0),
-
-                          // ✅ Neue Statusanzeige
                           Builder(
                             builder: (context) {
                               final availableCount = selectedStation
@@ -130,9 +126,7 @@ class StationDetailsWidget extends StatelessWidget {
                               );
                             },
                           ),
-
                           const SizedBox(width: 10.0),
-
                           ElevatedButton(
                             onPressed: () {
                               toggleFavorite(selectedStation.id.toString());
@@ -210,6 +204,17 @@ class StationDetailsWidget extends StatelessWidget {
                                         style: const TextStyle(fontSize: 20.0),
                                       ),
                                     ],
+                                  ),
+                                  const Spacer(),
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 40.0),
+                                    child: Text(
+                                      formatPlugType(evse.chargingPlug),
+                                      style: const TextStyle(
+                                        fontSize: 18.0,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
