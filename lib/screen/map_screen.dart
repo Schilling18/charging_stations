@@ -163,7 +163,7 @@ class MapScreenState extends State<MapScreen> {
                           SizedBox(width: 8),
                           Text(
                             'Nach Station suchen...',
-                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                            style: TextStyle(color: Colors.black, fontSize: 16),
                           ),
                         ],
                       ),

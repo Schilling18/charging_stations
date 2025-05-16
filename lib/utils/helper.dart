@@ -4,6 +4,7 @@
 //
 // __version__ = "1.0.3"
 //
+
 // __author__ = "Christopher Schilling"
 //
 
@@ -161,7 +162,7 @@ IconData getPlugIcon(String plugType) {
     case 'IEC_62196_T2_COMBO':
       return Icons.flash_on; // CCS
     case 'CHADEMO':
-      return Icons.power; // CHAdeMO
+      return Icons.power; // CHAdeMO b
     default:
       return Icons.device_unknown;
   }

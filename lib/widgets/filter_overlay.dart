@@ -33,7 +33,6 @@ class _FilterOverlayState extends State<FilterOverlay> {
     'Typ2',
     'CCS',
     'CHAdeMO',
-    'SchuKo',
     'Tesla',
   ];
   Set<String> selectedPlugs = {};
@@ -57,7 +56,7 @@ class _FilterOverlayState extends State<FilterOverlay> {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.grey.withOpacity(1),
+      color: const Color(0xFF282828),
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
@@ -73,25 +72,27 @@ class _FilterOverlayState extends State<FilterOverlay> {
                       style: TextStyle(
                         fontSize: 24.0,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: Color(0xFFB2BEB5),
                       ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close,
-                          color: Colors.white, size: 28),
+                          color: Color(0xFFB2BEB5), size: 28),
                       onPressed: widget.onClose,
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Divider(color: Colors.white24),
+                const Divider(
+                  color: Color(0xFFB2BEB5),
+                ),
                 const SizedBox(height: 10),
                 const Text(
                   'Ladegeschwindigkeit',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Color(0xFFB2BEB5),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -105,7 +106,7 @@ class _FilterOverlayState extends State<FilterOverlay> {
                         label: Text(option),
                         selected: isSelected,
                         selectedColor: Colors.green,
-                        backgroundColor: Colors.white,
+                        backgroundColor: const Color(0xFFB2BEB5),
                         labelStyle: TextStyle(
                           color: isSelected ? Colors.white : Colors.black,
                         ),
@@ -124,7 +125,7 @@ class _FilterOverlayState extends State<FilterOverlay> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Color(0xFFB2BEB5),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -138,7 +139,7 @@ class _FilterOverlayState extends State<FilterOverlay> {
                         label: Text(plug),
                         selected: isSelected,
                         selectedColor: Colors.green,
-                        backgroundColor: Colors.white,
+                        backgroundColor: const Color(0xFFB2BEB5),
                         labelStyle: TextStyle(
                           color: isSelected ? Colors.white : Colors.black,
                         ),
@@ -168,7 +169,7 @@ class _FilterOverlayState extends State<FilterOverlay> {
                   ),
                   child: const Text(
                     'Filter anwenden',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
+                    style: TextStyle(color: Color(0xFFB2BEB5), fontSize: 18),
                   ),
                 ),
               ],

@@ -1,8 +1,8 @@
 // Created 14.03.2024 by Christopher Schilling
 //
-// This file builds the favorites ovelay Widget.
+// This file builds the favorites overlay Widget.
 //
-// __version__ = "1.0.0"
+// __version__ = "1.0.1"
 //
 // __author__ = "Christopher Schilling"
 //
@@ -32,7 +32,7 @@ class FavoritesOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: Container(
-        color: Colors.grey.withOpacity(1),
+        color: const Color(0xFF282828),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -46,21 +46,36 @@ class FavoritesOverlay extends StatelessWidget {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.only(
+        top: 32.0,
+        left: 16.0,
+        right: 16.0,
+        bottom: 8.0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Favoriten",
-            style: TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                "Favoriten",
+                style: TextStyle(
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFB2BEB5),
+                ),
+              ),
+              IconButton(
+                icon:
+                    const Icon(Icons.close, color: Color(0xFFB2BEB5), size: 28),
+                onPressed: onClose,
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.close, color: Colors.white, size: 28),
-            onPressed: onClose,
+          const Divider(
+            color: Color(0xFFB2BEB5),
+            thickness: 1.0,
           ),
         ],
       ),
@@ -73,12 +88,12 @@ class FavoritesOverlay extends StatelessWidget {
           ? const Center(
               child: Text(
                 "Keine Favoriten vorhanden.",
-                style: TextStyle(color: Colors.black, fontSize: 18),
+                style: TextStyle(color: Color(0xFFB2BEB5), fontSize: 18),
               ),
             )
           : ListView.separated(
               itemCount: favoriteStations.length,
-              separatorBuilder: (_, __) => const Divider(color: Colors.white24),
+              separatorBuilder: (_, __) => const SizedBox(height: 20.0),
               itemBuilder: (context, index) {
                 final station = favoriteStations[index];
 
@@ -99,24 +114,25 @@ class FavoritesOverlay extends StatelessWidget {
                     ? '1 Ladesäule frei'
                     : '$availableCount Ladesäulen frei';
 
-                return Column(
-                  children: [
-                    ListTile(
-                      title: Text(
-                        station.address,
-                        style: const TextStyle(fontSize: 21.0),
-                      ),
-                      subtitle: Text(
-                        subtitleText,
-                        style: const TextStyle(fontSize: 18.0),
-                      ),
-                      onTap: () {
-                        onStationSelected(station);
-                        onClose();
-                      },
+                return ListTile(
+                  title: Text(
+                    station.address,
+                    style: const TextStyle(
+                      fontSize: 21.0,
+                      color: Color(0xFFB2BEB5),
                     ),
-                    const SizedBox(height: 16.0),
-                  ],
+                  ),
+                  subtitle: Text(
+                    subtitleText,
+                    style: const TextStyle(
+                      fontSize: 18.0,
+                      color: Color(0xFFB2BEB5),
+                    ),
+                  ),
+                  onTap: () {
+                    onStationSelected(station);
+                    onClose();
+                  },
                 );
               },
             ),

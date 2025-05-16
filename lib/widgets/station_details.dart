@@ -43,13 +43,13 @@ class StationDetailsWidget extends StatelessWidget {
         child: Container(
           height: 350,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color(0xFF282828),
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(40.0),
               topRight: Radius.circular(40.0),
             ),
             border: Border.all(
-              color: Colors.grey,
+              color: const Color(0xFF282828),
               width: 2.0,
             ),
           ),
@@ -66,6 +66,7 @@ class StationDetailsWidget extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 22.0,
                           fontWeight: FontWeight.bold,
+                          color: Color(0xFFB2BEB5),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -161,6 +162,7 @@ class StationDetailsWidget extends StatelessWidget {
                       'Entfernung: ${formatDistance(calculateDistance(currentPosition!, selectedStation.coordinates))}',
                       style: const TextStyle(
                         fontSize: 20.0,
+                        color: Color(0xFFB2BEB5),
                       ),
                     ),
                   ),
@@ -175,7 +177,7 @@ class StationDetailsWidget extends StatelessWidget {
                           Column(
                             children: [
                               const Divider(
-                                color: Colors.grey,
+                                color: Color(0xFFB2BEB5),
                                 thickness: 1.0,
                               ),
                               Row(
@@ -197,11 +199,17 @@ class StationDetailsWidget extends StatelessWidget {
                                         evse.status == 'AVAILABLE'
                                             ? 'Verfügbar'
                                             : 'Besetzt',
-                                        style: const TextStyle(fontSize: 20.0),
+                                        style: const TextStyle(
+                                          fontSize: 20.0,
+                                          color: Color(0xFFB2BEB5),
+                                        ),
                                       ),
                                       Text(
                                         '${evse.maxPower} kW',
-                                        style: const TextStyle(fontSize: 20.0),
+                                        style: const TextStyle(
+                                          fontSize: 20.0,
+                                          color: Color(0xFFB2BEB5),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -217,7 +225,7 @@ class StationDetailsWidget extends StatelessWidget {
                                           child: Icon(
                                             getPlugIcon(evse.chargingPlug),
                                             size: 50.0,
-                                            color: Colors.black87,
+                                            color: const Color(0xFFB2BEB5),
                                           ),
                                         ),
                                         Text(
@@ -225,6 +233,7 @@ class StationDetailsWidget extends StatelessWidget {
                                           style: const TextStyle(
                                             fontSize: 18.0,
                                             fontWeight: FontWeight.w500,
+                                            color: Color(0xFFB2BEB5),
                                           ),
                                         ),
                                       ],

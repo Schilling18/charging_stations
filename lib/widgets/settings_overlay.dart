@@ -2,11 +2,10 @@
 //
 // This file builds the settings overlay Widget.
 //
-// __version__ = "1.0.0"
+// __version__ = "1.0.1"
 //
 // __author__ = "Christopher Schilling"
 //
-
 import 'package:flutter/material.dart';
 
 class SettingsOverlay extends StatefulWidget {
@@ -30,7 +29,7 @@ class SettingsOverlayState extends State<SettingsOverlay> {
       right: 0,
       bottom: 0,
       child: Material(
-        color: Colors.grey.withOpacity(1),
+        color: const Color(0xFF282828),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
@@ -46,18 +45,18 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                       style: TextStyle(
                         fontSize: 24.0,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: Color(0xFFB2BEB5),
                       ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close,
-                          color: Colors.white, size: 28),
+                          color: Color(0xFFB2BEB5), size: 28),
                       onPressed: widget.onClose,
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Divider(color: Colors.white24),
+                const Divider(color: Color(0xFFB2BEB5)),
                 const SizedBox(height: 10),
 
                 // Sprache
@@ -66,27 +65,34 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Color(0xFFB2BEB5),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFB2BEB5),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
+                      dropdownColor: const Color(0xFFB2BEB5),
                       value: selectedLanguage,
                       isExpanded: true,
-                      icon: const Icon(Icons.arrow_drop_down),
+                      icon: const Icon(Icons.arrow_drop_down,
+                          color: Color(0xFF282828)),
                       items: ['Deutsch', 'Englisch', 'Französisch', 'Spanisch']
                           .map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(value,
-                              style: const TextStyle(color: Colors.black)),
+                          child: Text(
+                            value,
+                            style: const TextStyle(
+                              color: Color(0xFF282828),
+                              fontSize: 17.0,
+                            ),
+                          ),
                         );
                       }).toList(),
                       onChanged: (String? newValue) {
@@ -96,6 +102,10 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                           });
                         }
                       },
+                      style: const TextStyle(
+                        color: Color(0xFF282828),
+                        fontSize: 18.0,
+                      ),
                     ),
                   ),
                 ),
@@ -108,26 +118,33 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Color(0xFFB2BEB5),
                   ),
                 ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFB2BEB5),
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
+                      dropdownColor: const Color(0xFFB2BEB5),
                       value: selectedTheme,
                       isExpanded: true,
-                      icon: const Icon(Icons.arrow_drop_down),
+                      icon: const Icon(Icons.arrow_drop_down,
+                          color: Color(0xFF282828)),
                       items: ['Hell', 'Dunkel'].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
-                          child: Text(value,
-                              style: const TextStyle(color: Colors.black)),
+                          child: Text(
+                            value,
+                            style: const TextStyle(
+                              color: Color(0xFF282828),
+                              fontSize: 17.0,
+                            ),
+                          ),
                         );
                       }).toList(),
                       onChanged: (String? newValue) {
@@ -137,6 +154,10 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                           });
                         }
                       },
+                      style: const TextStyle(
+                        color: Color(0xFF282828),
+                        fontSize: 17.0,
+                      ),
                     ),
                   ),
                 ),
@@ -149,16 +170,14 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Color(0xFFB2BEB5),
                   ),
                 ),
                 const SizedBox(height: 8),
                 ElevatedButton(
-                  onPressed: () {
-                    // Impressum anzeigen
-                  },
+                  onPressed: () {},
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
+                    backgroundColor: const Color(0xFFB2BEB5),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8.0),
@@ -166,25 +185,23 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                   ),
                   child: const Text(
                     'Impressum',
-                    style: TextStyle(color: Colors.black, fontSize: 16),
+                    style: TextStyle(color: Color(0xFF282828), fontSize: 17),
                   ),
                 ),
 
                 const Spacer(),
 
-                // Anwenden
                 ElevatedButton(
                   onPressed: () {
-                    // Sprache und Theme übernehmen, falls nötig
                     widget.onClose();
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
+                    backgroundColor: const Color(0xFFB2BEB5),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text(
                     'Anwenden',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
+                    style: TextStyle(color: Color(0xFF282828), fontSize: 18),
                   ),
                 ),
               ],

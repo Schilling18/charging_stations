@@ -25,7 +25,7 @@ class BottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BottomAppBar(
       height: 70,
-      color: Colors.grey[400],
+      color: const Color(0xFF282828),
       shape: const CircularNotchedRectangle(),
       notchMargin: 8.0,
       child: SizedBox(

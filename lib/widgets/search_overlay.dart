@@ -39,8 +39,7 @@ class SearchOverlayState extends State<SearchOverlay> {
     super.initState();
     // Fokus nach dem Rendern des Widgets setzen
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(context)
-          .requestFocus(FocusNode()); // Fokussiert das Textfeld
+      FocusScope.of(context).requestFocus(FocusNode());
     });
   }
 
@@ -69,7 +68,7 @@ class SearchOverlayState extends State<SearchOverlay> {
         padding: const EdgeInsets.all(20.0),
         height: MediaQuery.of(context).size.height,
         width: MediaQuery.of(context).size.width,
-        color: Colors.grey.withOpacity(0.5),
+        color: const Color(0xFF282828),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -100,7 +99,7 @@ class SearchOverlayState extends State<SearchOverlay> {
               shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                   RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.0),
-                side: const BorderSide(color: Colors.grey, width: 2.0),
+                side: const BorderSide(color: Colors.black, width: 2.0),
               )),
             ),
             child: SizedBox(
@@ -110,7 +109,7 @@ class SearchOverlayState extends State<SearchOverlay> {
                   Expanded(
                     child: TextField(
                       controller: widget.searchController,
-                      autofocus: true, // Autofocus direkt setzen
+                      autofocus: true,
                       decoration: const InputDecoration(
                         hintText: 'Ladesäule suchen',
                         contentPadding:
@@ -120,7 +119,7 @@ class SearchOverlayState extends State<SearchOverlay> {
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 21),
                       onChanged: (value) {
-                        setState(() {}); // Update UI on search query change
+                        setState(() {});
                       },
                     ),
                   ),
@@ -128,8 +127,7 @@ class SearchOverlayState extends State<SearchOverlay> {
                     icon: const Icon(Icons.close),
                     onPressed: () {
                       setState(() {
-                        widget
-                            .onClose(); // Close the overlay on close button press
+                        widget.onClose();
                       });
                     },
                   ),
@@ -161,15 +159,24 @@ class SearchOverlayState extends State<SearchOverlay> {
                 return Column(
                   children: [
                     ListTile(
-                      title: Text(station.address,
-                          style: const TextStyle(fontSize: 21.0)),
-                      subtitle: Text(subtitleText,
-                          style: const TextStyle(fontSize: 18.0)),
+                      title: Text(
+                        station.address,
+                        style: const TextStyle(
+                          fontSize: 21.0,
+                          color: Color(0xFFB2BEB5),
+                        ),
+                      ),
+                      subtitle: Text(
+                        subtitleText,
+                        style: const TextStyle(
+                          fontSize: 18.0,
+                          color: Color(0xFFB2BEB5),
+                        ),
+                      ),
                       onTap: () {
                         setState(() {
                           widget.onStationSelected(station);
-                          widget
-                              .onClose(); // Close the overlay on station select
+                          widget.onClose();
                         });
                       },
                     ),
