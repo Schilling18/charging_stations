@@ -1,18 +1,16 @@
-// Created 14.03.2024 by Christopher Schilling
-//
-// This file builds the filter overlay Widget.
-//
-// __version__ = "1.0.2"
-//
-// __author__ = "Christopher Schilling"
-//
+// imports
 import 'package:flutter/material.dart';
 import 'package:charging_station/utils/helper.dart';
 
 class FilterOverlay extends StatefulWidget {
   final VoidCallback onClose;
+  final Function(String selectedSpeed, Set<String> selectedPlugs) onApply;
 
-  const FilterOverlay({super.key, required this.onClose});
+  const FilterOverlay({
+    super.key,
+    required this.onClose,
+    required this.onApply,
+  });
 
   @override
   State<FilterOverlay> createState() => _FilterOverlayState();
@@ -83,9 +81,7 @@ class _FilterOverlayState extends State<FilterOverlay> {
                   ],
                 ),
                 const SizedBox(height: 10),
-                const Divider(
-                  color: Color(0xFFB2BEB5),
-                ),
+                const Divider(color: Color(0xFFB2BEB5)),
                 const SizedBox(height: 10),
                 const Text(
                   'Ladegeschwindigkeit',
@@ -161,6 +157,7 @@ class _FilterOverlayState extends State<FilterOverlay> {
                   onPressed: () async {
                     await saveSelectedSpeed(selectedSpeed);
                     await saveSelectedPlugs(selectedPlugs);
+                    widget.onApply(selectedSpeed, selectedPlugs);
                     widget.onClose();
                   },
                   style: ElevatedButton.styleFrom(

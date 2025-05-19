@@ -32,6 +32,12 @@ class MapScreenState extends State<MapScreen> {
   List<ChargingStationInfo> chargingStations = [];
   Set<String> favoriteIds = {};
 
+  List<ChargingStationInfo> filteredStations = [];
+  String selectedSpeed = 'Alle';
+  Set<String> selectedPlugs = {};
+
+  List<Marker> _markers = [];
+
   final LatLng defaultCoordinates = const LatLng(52.3906, 13.0645); // Potsdam
 
   @override
@@ -63,7 +69,9 @@ class MapScreenState extends State<MapScreen> {
       setState(() {
         chargingStations = stations;
         favoriteIds = favs;
+        filteredStations = stations;
       });
+      updateMarkersFromFilteredStations();
     } catch (e) {
       setState(() {
         chargingStations = [];
@@ -78,6 +86,52 @@ class MapScreenState extends State<MapScreen> {
       selectedStation = station;
       selectedFromList = true;
       showFavoritesOverlay = false;
+    });
+  }
+
+  void updateMarkersFromFilteredStations() {
+    final newMarkers = filteredStations.map((station) {
+      if (station.coordinates.latitude.isNaN ||
+          station.coordinates.longitude.isNaN) {}
+
+      return Marker(
+        width: 40,
+        height: 40,
+        point: station.coordinates,
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedCoordinates = station.coordinates;
+              selectedStation = station;
+              selectedFromList = false;
+            });
+          },
+          child: Icon(
+            Icons.location_on,
+            size: 40.0,
+            color:
+                station.evses.values.any((evse) => evse.status == 'AVAILABLE')
+                    ? Colors.green
+                    : Colors.grey,
+          ),
+        ),
+      );
+    }).toList();
+
+    // Wenn Liste leer bleibt, Beispielmarker hinzufügen
+    if (newMarkers.isEmpty) {
+      newMarkers.add(
+        const Marker(
+          width: 40,
+          height: 40,
+          point: LatLng(52.52, 13.405),
+          child: Icon(Icons.location_on, color: Colors.blue),
+        ),
+      );
+    }
+
+    setState(() {
+      _markers = newMarkers;
     });
   }
 
@@ -104,30 +158,7 @@ class MapScreenState extends State<MapScreen> {
                       subdomains: const ['a', 'b', 'c'],
                     ),
                     MarkerLayer(
-                      markers: chargingStations.map((station) {
-                        final isAvailable = station.evses.values
-                            .any((evse) => evse.status == 'AVAILABLE');
-
-                        return Marker(
-                          width: 40.0,
-                          height: 40.0,
-                          point: station.coordinates,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                selectedCoordinates = station.coordinates;
-                                selectedStation = station;
-                                selectedFromList = false;
-                              });
-                            },
-                            child: Icon(
-                              Icons.location_on,
-                              size: 40.0,
-                              color: isAvailable ? Colors.green : Colors.grey,
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                      markers: _markers,
                     ),
                   ],
                 ),
@@ -178,6 +209,21 @@ class MapScreenState extends State<MapScreen> {
                       setState(() {
                         showFilterOverlay = false;
                       });
+                    },
+                    onApply: (newSpeed, newPlugs) async {
+                      final filtered = filterStations(
+                        allStations: chargingStations,
+                        selectedSpeed: newSpeed,
+                        selectedPlugs: newPlugs,
+                      );
+
+                      setState(() {
+                        selectedSpeed = newSpeed;
+                        selectedPlugs = newPlugs;
+                        filteredStations = filtered;
+                        showFilterOverlay = false;
+                      });
+                      updateMarkersFromFilteredStations();
                     },
                   ),
                 if (showSettingsOverlay)

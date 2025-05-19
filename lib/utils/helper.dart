@@ -14,6 +14,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:charging_station/models/api.dart';
 
 const String _selectedSpeedKey = 'selected_speed';
 const String _selectedPlugsKey = 'selected_plugs';
@@ -166,4 +167,36 @@ IconData getPlugIcon(String plugType) {
     default:
       return Icons.device_unknown;
   }
+}
+
+List<ChargingStationInfo> filterStations({
+  required List<ChargingStationInfo> allStations,
+  required String selectedSpeed,
+  required Set<String> selectedPlugs,
+}) {
+  const plugTypeMap = {
+    'Typ2': 'IEC_62196_T2',
+    'CCS': 'IEC_62196_T2_COMBO',
+    'CHAdeMO': 'CHADEMO',
+    'Tesla': 'TESLA',
+  };
+
+  final mappedPlugs = selectedPlugs.map((p) => plugTypeMap[p] ?? p).toSet();
+
+  return allStations.where((station) {
+    final hasMatchingEvse = station.evses.values.any((evse) {
+      final plugMatches =
+          mappedPlugs.isEmpty || mappedPlugs.contains(evse.chargingPlug);
+      final speedMatches = selectedSpeed == 'Alle' ||
+          (selectedSpeed == 'Bis 50kW' && evse.maxPower <= 50) ||
+          (selectedSpeed == 'Ab 50kW' && evse.maxPower >= 50) ||
+          (selectedSpeed == 'Ab 100kW' && evse.maxPower >= 100) ||
+          (selectedSpeed == 'Ab 200kW' && evse.maxPower >= 200) ||
+          (selectedSpeed == 'Ab 300kW' && evse.maxPower >= 300);
+
+      return plugMatches && speedMatches;
+    });
+
+    return hasMatchingEvse;
+  }).toList();
 }
