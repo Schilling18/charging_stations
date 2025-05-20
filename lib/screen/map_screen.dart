@@ -19,36 +19,45 @@ class MapScreen extends StatefulWidget {
 }
 
 class MapScreenState extends State<MapScreen> {
+  // --- Overlay States ---
   bool isOverlayVisible = false;
   bool showFavoritesOverlay = false;
   bool selectedFromList = false;
   bool showFilterOverlay = false;
   bool showSettingsOverlay = false;
 
-  //Map
+  // --- Map/Position ---
   Position? currentPosition;
   LatLng? selectedCoordinates;
   ChargingStationInfo? selectedStation;
 
-  //Favorites
+  // --- Daten/Favoriten/Filter ---
   List<ChargingStationInfo> chargingStations = [];
-  Set<String> favoriteIds = {};
-
-  //Filter
   List<ChargingStationInfo> filteredStations = [];
-  String selectedSpeed = 'Alle';
+  Set<String> favoriteIds = {};
   Set<String> selectedPlugs = {};
+  String selectedSpeed = 'Alle';
 
   List<Marker> _markers = [];
+
+  // --- Controller für Suchfeld ---
+  late final TextEditingController searchController;
 
   final LatLng defaultCoordinates = const LatLng(52.3906, 13.0645); // Potsdam
 
   @override
   void initState() {
     super.initState();
+    searchController = TextEditingController();
     selectedCoordinates = defaultCoordinates;
     _loadCurrentPosition();
     _loadChargingStationsAndFavorites();
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadCurrentPosition() async {
@@ -99,7 +108,6 @@ class MapScreenState extends State<MapScreen> {
               station.coordinates.longitude.isNaN) {
             return null;
           }
-
           return Marker(
             width: 40,
             height: 40,
@@ -144,6 +152,29 @@ class MapScreenState extends State<MapScreen> {
       _markers = newMarkers;
     });
   }
+
+  Widget _buildSearchOverlay() => SearchOverlay(
+        chargingStations: chargingStations,
+        searchController: searchController,
+        currentPosition: currentPosition,
+        onClose: () {
+          setState(() {
+            isOverlayVisible = false;
+          });
+        },
+        onStationSelected: (station) {
+          _onStationSelected(station);
+          setState(() {
+            isOverlayVisible = false;
+          });
+        },
+        onFilterTap: () {
+          setState(() {
+            isOverlayVisible = false;
+            showFilterOverlay = true;
+          });
+        },
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +257,6 @@ class MapScreenState extends State<MapScreen> {
                         selectedSpeed: newSpeed,
                         selectedPlugs: newPlugs,
                       );
-
                       setState(() {
                         selectedSpeed = newSpeed;
                         selectedPlugs = newPlugs;
@@ -300,23 +330,6 @@ class MapScreenState extends State<MapScreen> {
           : _buildBottomBar(),
     );
   }
-
-  Widget _buildSearchOverlay() => SearchOverlay(
-        searchController: TextEditingController(),
-        currentPosition: currentPosition,
-        onClose: () {
-          setState(() {
-            isOverlayVisible = false;
-          });
-        },
-        chargingStations: chargingStations,
-        onStationSelected: (station) {
-          _onStationSelected(station);
-          setState(() {
-            isOverlayVisible = false;
-          });
-        },
-      );
 
   Widget _buildFavoritesOverlay(List<ChargingStationInfo> favoriteStations) =>
       FavoritesOverlay(
