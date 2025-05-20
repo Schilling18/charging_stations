@@ -25,13 +25,16 @@ class MapScreenState extends State<MapScreen> {
   bool showFilterOverlay = false;
   bool showSettingsOverlay = false;
 
+  //Map
   Position? currentPosition;
   LatLng? selectedCoordinates;
   ChargingStationInfo? selectedStation;
 
+  //Favorites
   List<ChargingStationInfo> chargingStations = [];
   Set<String> favoriteIds = {};
 
+  //Filter
   List<ChargingStationInfo> filteredStations = [];
   String selectedSpeed = 'Alle';
   Set<String> selectedPlugs = {};
@@ -58,7 +61,7 @@ class MapScreenState extends State<MapScreen> {
         selectedCoordinates = LatLng(position.latitude, position.longitude);
       });
     } catch (e) {
-      // Fehlerbehandlung
+      // Fehlerbehandlung (optional: Snackbar, Log)
     }
   }
 
@@ -90,35 +93,42 @@ class MapScreenState extends State<MapScreen> {
   }
 
   void updateMarkersFromFilteredStations() {
-    final newMarkers = filteredStations.map((station) {
-      if (station.coordinates.latitude.isNaN ||
-          station.coordinates.longitude.isNaN) {}
+    final newMarkers = filteredStations
+        .map((station) {
+          if (station.coordinates.latitude.isNaN ||
+              station.coordinates.longitude.isNaN) {
+            return null;
+          }
 
-      return Marker(
-        width: 40,
-        height: 40,
-        point: station.coordinates,
-        child: GestureDetector(
-          onTap: () {
-            setState(() {
-              selectedCoordinates = station.coordinates;
-              selectedStation = station;
-              selectedFromList = false;
-            });
-          },
-          child: Icon(
-            Icons.location_on,
-            size: 40.0,
-            color:
-                station.evses.values.any((evse) => evse.status == 'AVAILABLE')
+          return Marker(
+            width: 40,
+            height: 40,
+            point: station.coordinates,
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedCoordinates = station.coordinates;
+                  selectedStation = station;
+                  selectedFromList = false;
+                });
+              },
+              child: Icon(
+                Icons.location_on,
+                size: 40.0,
+                color: isMatchingAndAvailableEvse(
+                  station,
+                  selectedSpeed,
+                  selectedPlugs,
+                )
                     ? Colors.green
                     : Colors.grey,
-          ),
-        ),
-      );
-    }).toList();
+              ),
+            ),
+          );
+        })
+        .whereType<Marker>()
+        .toList();
 
-    // Wenn Liste leer bleibt, Beispielmarker hinzufügen
     if (newMarkers.isEmpty) {
       newMarkers.add(
         const Marker(
@@ -193,7 +203,7 @@ class MapScreenState extends State<MapScreen> {
                           Icon(Icons.search, color: Colors.grey),
                           SizedBox(width: 8),
                           Text(
-                            'Nach Station suchen...',
+                            'Nach Station suchen.',
                             style: TextStyle(color: Colors.black, fontSize: 16),
                           ),
                         ],

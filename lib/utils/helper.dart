@@ -200,3 +200,39 @@ List<ChargingStationInfo> filterStations({
     return hasMatchingEvse;
   }).toList();
 }
+
+// Mappt UI-Strings auf PlugType-Konstanten
+Set<String> mapPlugTypes(Set<String> selectedPlugs) {
+  const plugTypeMap = {
+    'Typ2': 'IEC_62196_T2',
+    'CCS': 'IEC_62196_T2_COMBO',
+    'CHAdeMO': 'CHADEMO',
+    'Tesla': 'TESLA',
+  };
+  return selectedPlugs.map((p) => plugTypeMap[p] ?? p).toSet();
+}
+
+// Prüft, ob eine Station mindestens einen EVSE hat, der zum Filter passt UND verfügbar ist
+bool isMatchingAndAvailableEvse(ChargingStationInfo station,
+    String selectedSpeed, Set<String> selectedPlugs) {
+  final mappedPlugs = mapPlugTypes(selectedPlugs);
+
+  for (final evse in station.evses.values) {
+    final plugMatches =
+        mappedPlugs.isEmpty || mappedPlugs.contains(evse.chargingPlug);
+
+    final speedMatches = selectedSpeed == 'Alle' ||
+        (selectedSpeed == 'Bis 50kW' && evse.maxPower <= 50) ||
+        (selectedSpeed == 'Ab 50kW' && evse.maxPower >= 50) ||
+        (selectedSpeed == 'Ab 100kW' && evse.maxPower >= 100) ||
+        (selectedSpeed == 'Ab 200kW' && evse.maxPower >= 200) ||
+        (selectedSpeed == 'Ab 300kW' && evse.maxPower >= 300);
+
+    final available = evse.status == 'AVAILABLE';
+
+    if (plugMatches && speedMatches && available) {
+      return true;
+    }
+  }
+  return false;
+}
