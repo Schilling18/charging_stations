@@ -342,6 +342,12 @@ class MapScreenState extends State<MapScreen> {
           });
         },
         chargingStations: chargingStations,
+        onDeleteFavorite: (stationId) async {
+          final updated = await deleteFavorite(favoriteIds, stationId);
+          setState(() {
+            favoriteIds = updated;
+          });
+        },
       );
 
   Widget _buildBottomBar() => BottomBar(

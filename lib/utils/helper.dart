@@ -240,3 +240,13 @@ bool isMatchingAndAvailableEvse(
   }
   return false; // Ladesäule ist Grau
 }
+
+// Entfernt einen Favoriten aus dem Set und speichert es persistent ab
+Future<Set<String>> deleteFavorite(
+    Set<String> currentFavorites, String stationId) async {
+  final prefs = await SharedPreferences.getInstance();
+  final updatedFavorites = Set<String>.from(currentFavorites)
+    ..remove(stationId);
+  await prefs.setStringList('favoriteIds', updatedFavorites.toList());
+  return updatedFavorites;
+}

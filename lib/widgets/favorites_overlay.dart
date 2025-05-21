@@ -6,7 +6,6 @@
 //
 // __author__ = "Christopher Schilling"
 //
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:charging_station/models/api.dart';
@@ -18,6 +17,7 @@ class FavoritesOverlay extends StatelessWidget {
   final VoidCallback onClose;
   final Position? currentPosition;
   final List<ChargingStationInfo> chargingStations;
+  final Function(String) onDeleteFavorite;
 
   const FavoritesOverlay({
     super.key,
@@ -26,6 +26,7 @@ class FavoritesOverlay extends StatelessWidget {
     required this.onClose,
     required this.currentPosition,
     required this.chargingStations,
+    required this.onDeleteFavorite,
   });
 
   @override
@@ -77,6 +78,7 @@ class FavoritesOverlay extends StatelessWidget {
             color: Color(0xFFB2BEB5),
             thickness: 1.0,
           ),
+          // Kein zusätzlicher Abstand mehr hier!
         ],
       ),
     );
@@ -91,9 +93,8 @@ class FavoritesOverlay extends StatelessWidget {
                 style: TextStyle(color: Color(0xFFB2BEB5), fontSize: 18),
               ),
             )
-          : ListView.separated(
+          : ListView.builder(
               itemCount: favoriteStations.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 20.0),
               itemBuilder: (context, index) {
                 final station = favoriteStations[index];
 
@@ -114,25 +115,45 @@ class FavoritesOverlay extends StatelessWidget {
                     ? '1 Ladesäule frei'
                     : '$availableCount Ladesäulen frei';
 
-                return ListTile(
-                  title: Text(
-                    station.address,
-                    style: const TextStyle(
-                      fontSize: 21.0,
-                      color: Color(0xFFB2BEB5),
+                return Column(
+                  children: [
+                    if (index > 0) ...[
+                      const Divider(
+                        color: Color(0xFFB2BEB5),
+                        thickness: 1.0,
+                        height: 0,
+                      ),
+                      const SizedBox(
+                          height: 14), // Abstand nur vor 2. usw. Eintrag
+                    ],
+                    ListTile(
+                      title: Text(
+                        station.address,
+                        style: const TextStyle(
+                          fontSize: 21.0,
+                          color: Color(0xFFB2BEB5),
+                        ),
+                      ),
+                      subtitle: Text(
+                        subtitleText,
+                        style: const TextStyle(
+                          fontSize: 18.0,
+                          color: Color(0xFFB2BEB5),
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.close,
+                            color: Color(0xFFB2BEB5), size: 26),
+                        onPressed: () =>
+                            onDeleteFavorite(station.id.toString()),
+                        tooltip: "Favorit entfernen",
+                      ),
+                      onTap: () {
+                        onStationSelected(station);
+                        onClose();
+                      },
                     ),
-                  ),
-                  subtitle: Text(
-                    subtitleText,
-                    style: const TextStyle(
-                      fontSize: 18.0,
-                      color: Color(0xFFB2BEB5),
-                    ),
-                  ),
-                  onTap: () {
-                    onStationSelected(station);
-                    onClose();
-                  },
+                  ],
                 );
               },
             ),
