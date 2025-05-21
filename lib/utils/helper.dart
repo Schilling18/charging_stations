@@ -213,8 +213,11 @@ Set<String> mapPlugTypes(Set<String> selectedPlugs) {
 }
 
 // Prüft, ob eine Station mindestens einen EVSE hat, der zum Filter passt UND verfügbar ist
-bool isMatchingAndAvailableEvse(ChargingStationInfo station,
-    String selectedSpeed, Set<String> selectedPlugs) {
+bool isMatchingAndAvailableEvse(
+  ChargingStationInfo station,
+  String selectedSpeed,
+  Set<String> selectedPlugs,
+) {
   final mappedPlugs = mapPlugTypes(selectedPlugs);
 
   for (final evse in station.evses.values) {
@@ -229,10 +232,11 @@ bool isMatchingAndAvailableEvse(ChargingStationInfo station,
         (selectedSpeed == 'Ab 300kW' && evse.maxPower >= 300);
 
     final available = evse.status == 'AVAILABLE';
+    final notIllegallyParked = evse.illegallyParked == false;
 
-    if (plugMatches && speedMatches && available) {
-      return true;
+    if (plugMatches && speedMatches && available && notIllegallyParked) {
+      return true; // Ladesäule ist Grün
     }
   }
-  return false;
+  return false; // Ladesäule ist Grau
 }

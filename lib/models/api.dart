@@ -1,18 +1,40 @@
 // Created 20.03.2024 by Christopher Schilling
-// Last Modified 17.07.2024
+// Last Modified 21.05.2025
 //
 // The file converts and filters the information from the API
 // into a usable entity
 //
-// __version__ = "1.0.1"
-//
+// __version__ = "1.0.2"
 // __author__ = "Christopher Schilling"
-//
 
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
+
+/// Class for detailed Parking Sensor Status (if present).
+class ParkingSensorStatus {
+  final String status;
+  final bool illegallyParked;
+  final bool sensorIssue;
+  final String utcLastStateChange;
+
+  ParkingSensorStatus({
+    required this.status,
+    required this.illegallyParked,
+    required this.sensorIssue,
+    required this.utcLastStateChange,
+  });
+
+  factory ParkingSensorStatus.fromJson(Map<String, dynamic> json) {
+    return ParkingSensorStatus(
+      status: json['status'] ?? '',
+      illegallyParked: json['illegally_parked'] ?? false,
+      sensorIssue: json['sensor_issue'] ?? false,
+      utcLastStateChange: json['utc_last_state_change'] ?? '',
+    );
+  }
+}
 
 /// Class representing an Electric Vehicle Supply Equipment (EVSE).
 class EvseInfo {
@@ -21,6 +43,8 @@ class EvseInfo {
   final String status;
   final bool illegallyParked;
   final String chargingPlug;
+  final ParkingSensorStatus? parkingSensor; // null wenn kein Sensor
+  final bool hasParkingSensor; // true = Sensor vorhanden, false = kein Sensor
 
   EvseInfo({
     required this.evseNumber,
@@ -28,6 +52,8 @@ class EvseInfo {
     required this.status,
     required this.illegallyParked,
     required this.chargingPlug,
+    this.parkingSensor,
+    this.hasParkingSensor = false,
   });
 }
 
@@ -60,10 +86,21 @@ class ChargingStationInfo {
         bool illegallyParked = false;
         String status = evse['status'];
 
-        if (evse.containsKey('parking_sensor') &&
-            evse['parking_sensor'] is Map) {
-          var parkingSensor = evse['parking_sensor'] as Map<String, dynamic>;
-          illegallyParked = parkingSensor['illegally_parked'] ?? false;
+        ParkingSensorStatus? parkingSensorStatus;
+        bool hasParkingSensor = false;
+
+        // Unterscheide zwischen false und Objekt!
+        if (evse.containsKey('parking_sensor')) {
+          final ps = evse['parking_sensor'];
+          if (ps == false) {
+            parkingSensorStatus = null;
+            hasParkingSensor = false;
+            illegallyParked = false;
+          } else if (ps is Map<String, dynamic>) {
+            parkingSensorStatus = ParkingSensorStatus.fromJson(ps);
+            hasParkingSensor = true;
+            illegallyParked = ps['illegally_parked'] ?? false;
+          }
         }
 
         if (status == 'AVAILABLE' && !illegallyParked) {
@@ -76,6 +113,8 @@ class ChargingStationInfo {
           status: status,
           illegallyParked: illegallyParked,
           chargingPlug: connector['standard'],
+          parkingSensor: parkingSensorStatus,
+          hasParkingSensor: hasParkingSensor,
         );
       }
     }
@@ -155,7 +194,16 @@ void main() async {
           print('  Max Power: ${evse.maxPower}');
           print('  Status: ${evse.status}');
           print('  Illegally Parked: ${evse.illegallyParked}');
-          print('Charging Plug: ${evse.chargingPlug}');
+          print('  Charging Plug: ${evse.chargingPlug}');
+          print('  Has Parking Sensor: ${evse.hasParkingSensor}');
+          if (evse.parkingSensor != null) {
+            print('    - Sensor Status: ${evse.parkingSensor!.status}');
+            print(
+                '    - Illegally Parked: ${evse.parkingSensor!.illegallyParked}');
+            print('    - Sensor Issue: ${evse.parkingSensor!.sensorIssue}');
+            print(
+                '    - Last State Change: ${evse.parkingSensor!.utcLastStateChange}');
+          }
         }
       }
       if (kDebugMode) {
