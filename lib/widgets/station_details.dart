@@ -211,6 +211,16 @@ class StationDetailsWidget extends StatelessWidget {
                                           color: Color(0xFFB2BEB5),
                                         ),
                                       ),
+                                      if (evse.hasParkingSensor &&
+                                          evse.parkingSensor != null)
+                                        const Text(
+                                          'Parksensor Aktiv',
+                                          style: TextStyle(
+                                            fontSize: 18.0,
+                                            color: Colors.lightBlue,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                     ],
                                   ),
                                   const Spacer(),
