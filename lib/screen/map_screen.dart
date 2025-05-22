@@ -1,3 +1,12 @@
+// Created 14.03.2024 by Christopher Schilling
+//
+// This file builds the MapScreen Widget.
+//
+// __version__ = "1.0.0"
+//
+// __author__ = "Christopher Schilling"
+//
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -10,6 +19,7 @@ import 'package:charging_station/widgets/filter_overlay.dart';
 import 'package:charging_station/widgets/settings_overlay.dart';
 import 'package:charging_station/models/api.dart';
 import 'package:charging_station/utils/helper.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -231,13 +241,14 @@ class MapScreenState extends State<MapScreen> {
                           ),
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.search, color: Colors.grey),
-                          SizedBox(width: 8),
+                          const Icon(Icons.search, color: Colors.grey),
+                          const SizedBox(width: 8),
                           Text(
-                            'Nach Station suchen.',
-                            style: TextStyle(color: Colors.black, fontSize: 16),
+                            'search'.tr(),
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 16),
                           ),
                         ],
                       ),

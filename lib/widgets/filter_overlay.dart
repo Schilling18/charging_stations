@@ -1,6 +1,6 @@
-// imports
 import 'package:flutter/material.dart';
 import 'package:charging_station/utils/helper.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class FilterOverlay extends StatefulWidget {
   final VoidCallback onClose;
@@ -18,14 +18,14 @@ class FilterOverlay extends StatefulWidget {
 
 class _FilterOverlayState extends State<FilterOverlay> {
   final List<String> speedOptions = [
-    'Alle',
-    'Bis 50kW',
-    'Ab 50kW',
-    'Ab 100kW',
-    'Ab 200kW',
-    'Ab 300kW'
+    'all',
+    'upto_50',
+    'from_50',
+    'from_100',
+    'from_200',
+    'from_300'
   ];
-  String selectedSpeed = 'Alle';
+  String selectedSpeed = 'all';
 
   final List<String> plugOptions = [
     'Typ2',
@@ -64,9 +64,9 @@ class _FilterOverlayState extends State<FilterOverlay> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    "Filter",
-                    style: TextStyle(
+                  Text(
+                    "filter".tr(),
+                    style: const TextStyle(
                       fontSize: 24.0,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFFB2BEB5),
@@ -87,9 +87,9 @@ class _FilterOverlayState extends State<FilterOverlay> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Ladegeschwindigkeit',
-                        style: TextStyle(
+                      Text(
+                        'speed'.tr(),
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFFB2BEB5),
@@ -98,12 +98,12 @@ class _FilterOverlayState extends State<FilterOverlay> {
                       const SizedBox(height: 8),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: speedOptions.map((option) {
-                          final isSelected = selectedSpeed == option;
+                        children: speedOptions.map((optionKey) {
+                          final isSelected = selectedSpeed == optionKey;
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),
                             child: ChoiceChip(
-                              label: Text(option),
+                              label: Text(tr(optionKey)),
                               selected: isSelected,
                               selectedColor: Colors.green,
                               backgroundColor: const Color(0xFFB2BEB5),
@@ -112,7 +112,7 @@ class _FilterOverlayState extends State<FilterOverlay> {
                               ),
                               onSelected: (_) {
                                 setState(() {
-                                  selectedSpeed = option;
+                                  selectedSpeed = optionKey;
                                 });
                               },
                             ),
@@ -120,9 +120,9 @@ class _FilterOverlayState extends State<FilterOverlay> {
                         }).toList(),
                       ),
                       const SizedBox(height: 20),
-                      const Text(
-                        'Stecker',
-                        style: TextStyle(
+                      Text(
+                        'plug'.tr(),
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFFB2BEB5),
@@ -172,9 +172,10 @@ class _FilterOverlayState extends State<FilterOverlay> {
                   backgroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text(
-                  'Filter anwenden',
-                  style: TextStyle(color: Color(0xFFB2BEB5), fontSize: 18),
+                child: Text(
+                  'apply_filter'.tr(),
+                  style:
+                      const TextStyle(color: Color(0xFFB2BEB5), fontSize: 18),
                 ),
               ),
             ],

@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:charging_station/models/api.dart';
 import 'package:charging_station/utils/helper.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class FavoritesOverlay extends StatelessWidget {
   final List<ChargingStationInfo> favoriteStations;
@@ -37,15 +38,15 @@ class FavoritesOverlay extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildHeader(),
-            _buildFavoritesList(),
+            _buildHeader(context),
+            _buildFavoritesList(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(
         top: 32.0,
@@ -59,9 +60,9 @@ class FavoritesOverlay extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                "Favoriten",
-                style: TextStyle(
+              Text(
+                "favorites".tr(),
+                style: const TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFB2BEB5),
@@ -78,19 +79,18 @@ class FavoritesOverlay extends StatelessWidget {
             color: Color(0xFFB2BEB5),
             thickness: 1.0,
           ),
-          // Kein zusätzlicher Abstand mehr hier!
         ],
       ),
     );
   }
 
-  Widget _buildFavoritesList() {
+  Widget _buildFavoritesList(BuildContext context) {
     return Expanded(
       child: favoriteStations.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
-                "Keine Favoriten vorhanden.",
-                style: TextStyle(color: Color(0xFFB2BEB5), fontSize: 18),
+                "no_favorites".tr(),
+                style: const TextStyle(color: Color(0xFFB2BEB5), fontSize: 18),
               ),
             )
           : ListView.builder(
@@ -108,12 +108,13 @@ class FavoritesOverlay extends StatelessWidget {
                     currentPosition!,
                     station.coordinates,
                   );
-                  subtitleText = '${formatDistance(distance)} entfernt, ';
+                  subtitleText = '${formatDistance(distance)} ${"away".tr()}, ';
                 }
 
                 subtitleText += availableCount == 1
-                    ? '1 Ladesäule frei'
-                    : '$availableCount Ladesäulen frei';
+                    ? "one_charger_available".tr()
+                    : tr('chargers_available',
+                        args: [availableCount.toString()]);
 
                 return Column(
                   children: [
@@ -123,8 +124,7 @@ class FavoritesOverlay extends StatelessWidget {
                         thickness: 1.0,
                         height: 0,
                       ),
-                      const SizedBox(
-                          height: 14), // Abstand nur vor 2. usw. Eintrag
+                      const SizedBox(height: 14),
                     ],
                     ListTile(
                       title: Text(
@@ -146,7 +146,7 @@ class FavoritesOverlay extends StatelessWidget {
                             color: Color(0xFFB2BEB5), size: 26),
                         onPressed: () =>
                             onDeleteFavorite(station.id.toString()),
-                        tooltip: "Favorit entfernen",
+                        tooltip: "remove_favorite".tr(),
                       ),
                       onTap: () {
                         onStationSelected(station);

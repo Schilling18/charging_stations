@@ -2,12 +2,12 @@
 //
 // This file builds the BottomBar Widget.
 //
-// __version__ = "1.0.0"
+// __version__ = "1.0.1"
 //
 // __author__ = "Christopher Schilling"
 //
-
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class BottomBar extends StatelessWidget {
   final VoidCallback onFavoritesTap;
@@ -33,15 +33,15 @@ class BottomBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
             _buildBottomButton(
-              label: 'Favoriten',
+              label: tr('favorites'),
               onPressed: onFavoritesTap,
             ),
             _buildBottomButton(
-              label: 'Einstellungen',
+              label: tr('settings'),
               onPressed: onSettingsTap,
             ),
             _buildBottomButton(
-              label: 'Filter',
+              label: tr('filter'),
               onPressed: onFilterTap,
             ),
           ],
@@ -50,8 +50,10 @@ class BottomBar extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomButton(
-      {required String label, required VoidCallback onPressed}) {
+  Widget _buildBottomButton({
+    required String label,
+    required VoidCallback onPressed,
+  }) {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(

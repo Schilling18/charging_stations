@@ -11,6 +11,7 @@ import 'package:charging_station/models/api.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/helper.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class StationDetailsWidget extends StatelessWidget {
   final ChargingStationInfo selectedStation;
@@ -88,9 +89,9 @@ class StationDetailsWidget extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 16.0, vertical: 8.0),
                             ),
-                            child: const Text(
-                              'Route',
-                              style: TextStyle(
+                            child: Text(
+                              'route'.tr(),
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16.0,
                                 fontWeight: FontWeight.bold,
@@ -116,8 +117,9 @@ class StationDetailsWidget extends StatelessWidget {
                                 ),
                                 child: Text(
                                   availableCount > 0
-                                      ? '$availableCount Verfügbar'
-                                      : 'Nicht verfügbar',
+                                      ? tr('chargers_available',
+                                          args: [availableCount.toString()])
+                                      : 'not_available'.tr(),
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -142,7 +144,9 @@ class StationDetailsWidget extends StatelessWidget {
                                   horizontal: 16.0, vertical: 8.0),
                             ),
                             child: Text(
-                              isFavorite ? 'Favorit' : 'Favorisieren',
+                              isFavorite
+                                  ? 'favorite'.tr()
+                                  : 'add_favorite'.tr(),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16.0,
@@ -159,7 +163,7 @@ class StationDetailsWidget extends StatelessWidget {
                 if (currentPosition != null)
                   Center(
                     child: Text(
-                      'Entfernung: ${formatDistance(calculateDistance(currentPosition!, selectedStation.coordinates))}',
+                      '${'distance'.tr()}: ${formatDistance(calculateDistance(currentPosition!, selectedStation.coordinates))}',
                       style: const TextStyle(
                         fontSize: 20.0,
                         color: Color(0xFFB2BEB5),
@@ -197,8 +201,8 @@ class StationDetailsWidget extends StatelessWidget {
                                     children: [
                                       Text(
                                         evse.status == 'AVAILABLE'
-                                            ? 'Verfügbar'
-                                            : 'Besetzt',
+                                            ? 'available'.tr()
+                                            : 'occupied'.tr(),
                                         style: const TextStyle(
                                           fontSize: 20.0,
                                           color: Color(0xFFB2BEB5),
@@ -213,9 +217,9 @@ class StationDetailsWidget extends StatelessWidget {
                                       ),
                                       if (evse.hasParkingSensor &&
                                           evse.parkingSensor != null)
-                                        const Text(
-                                          'Parksensor Aktiv',
-                                          style: TextStyle(
+                                        Text(
+                                          'parking_sensor'.tr(),
+                                          style: const TextStyle(
                                             fontSize: 18.0,
                                             color: Colors.lightBlue,
                                             fontWeight: FontWeight.bold,

@@ -187,12 +187,12 @@ List<ChargingStationInfo> filterStations({
     final hasMatchingEvse = station.evses.values.any((evse) {
       final plugMatches =
           mappedPlugs.isEmpty || mappedPlugs.contains(evse.chargingPlug);
-      final speedMatches = selectedSpeed == 'Alle' ||
-          (selectedSpeed == 'Bis 50kW' && evse.maxPower <= 50) ||
-          (selectedSpeed == 'Ab 50kW' && evse.maxPower >= 50) ||
-          (selectedSpeed == 'Ab 100kW' && evse.maxPower >= 100) ||
-          (selectedSpeed == 'Ab 200kW' && evse.maxPower >= 200) ||
-          (selectedSpeed == 'Ab 300kW' && evse.maxPower >= 300);
+      final speedMatches = selectedSpeed == 'all' ||
+          (selectedSpeed == 'upto_50' && evse.maxPower <= 50) ||
+          (selectedSpeed == 'from_50' && evse.maxPower >= 50) ||
+          (selectedSpeed == 'from_100' && evse.maxPower >= 100) ||
+          (selectedSpeed == 'from_200' && evse.maxPower >= 200) ||
+          (selectedSpeed == 'from_300' && evse.maxPower >= 300);
 
       return plugMatches && speedMatches;
     });

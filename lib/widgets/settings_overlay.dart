@@ -1,25 +1,58 @@
-// Created 14.03.2024 by Christopher Schilling
-//
-// This file builds the settings overlay Widget.
-//
-// __version__ = "1.0.1"
-//
-// __author__ = "Christopher Schilling"
-//
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsOverlay extends StatefulWidget {
   final VoidCallback onClose;
+  final void Function(String theme)? onThemeChanged;
 
-  const SettingsOverlay({super.key, required this.onClose});
+  const SettingsOverlay({
+    super.key,
+    required this.onClose,
+    this.onThemeChanged,
+  });
 
   @override
   SettingsOverlayState createState() => SettingsOverlayState();
 }
 
 class SettingsOverlayState extends State<SettingsOverlay> {
-  String selectedLanguage = 'Deutsch';
+  late Locale _selectedLocale;
   String selectedTheme = 'Dunkel';
+
+  final Map<String, Locale> languageMap = {
+    'Deutsch': const Locale('de'),
+    'English': const Locale('en'),
+    'Français': const Locale('fr'),
+    'Español': const Locale('es'),
+  };
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _selectedLocale = context.locale;
+    _loadTheme();
+  }
+
+  Future<void> _saveLocale(Locale locale) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedLocale', locale.languageCode);
+  }
+
+  Future<void> _saveTheme(String theme) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedTheme', theme);
+  }
+
+  Future<void> _loadTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? theme = prefs.getString('selectedTheme');
+    if (theme != null && mounted) {
+      setState(() {
+        selectedTheme = theme;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +73,9 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      "Einstellungen",
-                      style: TextStyle(
+                    Text(
+                      "settings".tr(),
+                      style: const TextStyle(
                         fontSize: 24.0,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFB2BEB5),
@@ -60,9 +93,9 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                 const SizedBox(height: 10),
 
                 // Sprache
-                const Text(
-                  'Sprache',
-                  style: TextStyle(
+                Text(
+                  "language".tr(),
+                  style: const TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFFB2BEB5),
@@ -76,29 +109,28 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
+                    child: DropdownButton<Locale>(
                       dropdownColor: const Color(0xFFB2BEB5),
-                      value: selectedLanguage,
+                      value: _selectedLocale,
                       isExpanded: true,
                       icon: const Icon(Icons.arrow_drop_down,
                           color: Color(0xFF282828)),
-                      items: ['Deutsch', 'Englisch', 'Französisch', 'Spanisch']
-                          .map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(
-                            value,
-                            style: const TextStyle(
-                              color: Color(0xFF282828),
-                              fontSize: 17.0,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
+                      items: languageMap.entries
+                          .map((entry) => DropdownMenuItem<Locale>(
+                                value: entry.value,
+                                child: Text(
+                                  entry.key,
+                                  style: const TextStyle(
+                                    color: Color(0xFF282828),
+                                    fontSize: 17.0,
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                      onChanged: (Locale? newLocale) {
+                        if (newLocale != null) {
                           setState(() {
-                            selectedLanguage = newValue;
+                            _selectedLocale = newLocale;
                           });
                         }
                       },
@@ -112,10 +144,10 @@ class SettingsOverlayState extends State<SettingsOverlay> {
 
                 const SizedBox(height: 20),
 
-                // Design (Theme Mode)
-                const Text(
-                  'Design',
-                  style: TextStyle(
+                // Design (Theme)
+                Text(
+                  "design".tr(),
+                  style: const TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFFB2BEB5),
@@ -147,10 +179,10 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                           ),
                         );
                       }).toList(),
-                      onChanged: (String? newValue) {
-                        if (newValue != null) {
+                      onChanged: (String? value) {
+                        if (value != null) {
                           setState(() {
-                            selectedTheme = newValue;
+                            selectedTheme = value;
                           });
                         }
                       },
@@ -165,9 +197,9 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                 const SizedBox(height: 20),
 
                 // Impressum
-                const Text(
-                  'Rechtliches',
-                  style: TextStyle(
+                Text(
+                  "legal".tr(),
+                  style: const TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFFB2BEB5),
@@ -183,27 +215,36 @@ class SettingsOverlayState extends State<SettingsOverlay> {
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  child: const Text(
-                    'Impressum',
-                    style: TextStyle(color: Color(0xFF282828), fontSize: 17),
+                  child: Text(
+                    "imprint".tr(),
+                    style:
+                        const TextStyle(color: Color(0xFF282828), fontSize: 17),
                   ),
                 ),
 
                 const Spacer(),
 
+                // Anwenden-Button
                 ElevatedButton(
                   onPressed: () {
+                    context.setLocale(_selectedLocale);
+                    if (widget.onThemeChanged != null) {
+                      widget.onThemeChanged!(selectedTheme);
+                    }
                     widget.onClose();
+                    _saveLocale(_selectedLocale);
+                    _saveTheme(selectedTheme);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFB2BEB5),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text(
-                    'Anwenden',
-                    style: TextStyle(color: Color(0xFF282828), fontSize: 18),
+                  child: Text(
+                    'apply'.tr(),
+                    style:
+                        const TextStyle(color: Color(0xFF282828), fontSize: 18),
                   ),
-                ),
+                )
               ],
             ),
           ),

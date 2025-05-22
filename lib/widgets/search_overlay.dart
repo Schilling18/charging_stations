@@ -6,11 +6,11 @@
 //
 // __author__ = "Christopher Schilling"
 //
-
 import 'package:flutter/material.dart';
 import 'package:charging_station/models/api.dart';
 import 'package:geolocator/geolocator.dart';
 import '../utils/helper.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class SearchOverlay extends StatefulWidget {
   final List<ChargingStationInfo> chargingStations;
@@ -18,7 +18,7 @@ class SearchOverlay extends StatefulWidget {
   final Position? currentPosition;
   final VoidCallback onClose;
   final void Function(ChargingStationInfo station) onStationSelected;
-  final VoidCallback? onFilterTap; // NEU!
+  final VoidCallback? onFilterTap;
 
   const SearchOverlay({
     super.key,
@@ -27,7 +27,7 @@ class SearchOverlay extends StatefulWidget {
     required this.currentPosition,
     required this.onClose,
     required this.onStationSelected,
-    this.onFilterTap, // NEU!
+    this.onFilterTap,
   });
 
   @override
@@ -103,7 +103,7 @@ class SearchOverlayState extends State<SearchOverlay> {
                       icon:
                           const Icon(Icons.filter_list, color: Colors.black87),
                       onPressed: widget.onFilterTap,
-                      tooltip: 'Filter',
+                      tooltip: 'filter'.tr(),
                     ),
                   ),
                 ),
@@ -112,13 +112,14 @@ class SearchOverlayState extends State<SearchOverlay> {
                   child: TextField(
                     controller: widget.searchController,
                     autofocus: true,
-                    decoration: const InputDecoration(
-                      hintText: 'Ladesäule suchen',
-                      contentPadding: EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 15.0),
+                    decoration: InputDecoration(
+                      hintText: 'search'.tr(),
+                      contentPadding:
+                          const EdgeInsets.fromLTRB(8.0, 16.0, 8.0, 15.0),
                       border: InputBorder.none,
                     ),
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 21),
+                        fontWeight: FontWeight.bold, fontSize: 16),
                     onChanged: (value) {
                       setState(() {});
                     },
@@ -127,6 +128,7 @@ class SearchOverlayState extends State<SearchOverlay> {
                 // Close-Button
                 IconButton(
                   icon: const Icon(Icons.close),
+                  tooltip: 'close'.tr(),
                   onPressed: () {
                     setState(() {
                       widget.onClose();
@@ -150,12 +152,13 @@ class SearchOverlayState extends State<SearchOverlay> {
                 if (widget.currentPosition != null) {
                   double distance = calculateDistance(
                       widget.currentPosition!, station.coordinates);
-                  subtitleText = '${formatDistance(distance)} entfernt, ';
+                  subtitleText = '${formatDistance(distance)} ${'away'.tr()}, ';
                 }
 
                 subtitleText += availableCount == 1
-                    ? '$availableCount Ladesäule frei'
-                    : '$availableCount Ladesäulen frei';
+                    ? 'one_charger_available'.tr()
+                    : 'chargers_available'
+                        .tr(args: [availableCount.toString()]);
 
                 return Column(
                   children: [
