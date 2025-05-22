@@ -63,7 +63,9 @@ class MapScreenState extends State<MapScreen> {
   Future<void> _loadCurrentPosition() async {
     try {
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
       setState(() {
         currentPosition = position;

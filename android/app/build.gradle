@@ -23,7 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    compileSdkVersion 34
+    compileSdkVersion 35
     namespace "notfound.com.charging_station"
     ndkVersion flutter.ndkVersion
 
@@ -35,7 +35,7 @@ android {
     defaultConfig {
         applicationId "notfound.com.charging_station"
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }

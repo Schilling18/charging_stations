@@ -7,24 +7,39 @@
 // __author__ = "Christopher Schilling"
 //
 
+import 'package:charging_station/screen/map_screen.dart';
 import 'package:flutter/material.dart';
-import 'screen/map_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
 
-void main() {
-  runApp(const ChargingStationApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [
+        Locale('en'),
+        Locale('fr'),
+        Locale('de'),
+        Locale('es')
+      ],
+      path: 'assets/langs',
+      fallbackLocale: const Locale('en'),
+      child: const MyApp(),
+    ),
+  );
 }
 
-class ChargingStationApp extends StatelessWidget {
-  const ChargingStationApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
+      title: 'app_title'.tr(),
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
       home: const MapScreen(),
     );
   }
