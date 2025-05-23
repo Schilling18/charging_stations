@@ -46,7 +46,7 @@ class MapScreenState extends State<MapScreen> {
   List<ChargingStationInfo> filteredStations = [];
   Set<String> favoriteIds = {};
   Set<String> selectedPlugs = {};
-  String selectedSpeed = 'Alle';
+  String selectedSpeed = 'all';
 
   List<Marker> _markers = [];
 

@@ -155,10 +155,13 @@ class SearchOverlayState extends State<SearchOverlay> {
                   subtitleText = '${formatDistance(distance)} ${'away'.tr()}, ';
                 }
 
-                subtitleText += availableCount == 1
-                    ? 'one_charger_available'.tr()
-                    : 'chargers_available'
-                        .tr(args: [availableCount.toString()]);
+                // Anpassung wie beim FavoritesOverlay
+                if (availableCount == 1) {
+                  subtitleText += 'one_charger_available'.tr();
+                } else {
+                  subtitleText +=
+                      '$availableCount ${'chargers_available'.tr()}';
+                }
 
                 return Column(
                   children: [

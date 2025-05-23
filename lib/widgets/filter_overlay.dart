@@ -17,6 +17,7 @@ class FilterOverlay extends StatefulWidget {
 }
 
 class _FilterOverlayState extends State<FilterOverlay> {
+  // Speed-Optionen als KEYS, Label kommt aus der Übersetzung
   final List<String> speedOptions = [
     'all',
     'upto_50',
@@ -96,6 +97,7 @@ class _FilterOverlayState extends State<FilterOverlay> {
                         ),
                       ),
                       const SizedBox(height: 8),
+                      // ChoiceChips für Ladegeschwindigkeit
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: speedOptions.map((optionKey) {
@@ -129,6 +131,7 @@ class _FilterOverlayState extends State<FilterOverlay> {
                         ),
                       ),
                       const SizedBox(height: 8),
+                      // FilterChips für Steckertypen
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: plugOptions.map((plug) {

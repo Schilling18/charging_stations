@@ -2,12 +2,10 @@
 //
 // The file stores logicfunctions, which are used across the project.
 //
-// __version__ = "1.0.3"
+// __version__ = "1.0.4"
 //
-
 // __author__ = "Christopher Schilling"
 //
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -116,7 +114,7 @@ bool isFavorite(Set<String> favorites, String id) {
   return favorites.contains(id);
 }
 
-/// Speichert die ausgewählte Ladegeschwindigkeit
+/// Speichert die ausgewählte Ladegeschwindigkeit (immer den KEY!)
 Future<void> saveSelectedSpeed(String speed) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setString(_selectedSpeedKey, speed);
@@ -128,10 +126,11 @@ Future<void> saveSelectedPlugs(Set<String> plugs) async {
   await prefs.setStringList(_selectedPlugsKey, plugs.toList());
 }
 
-/// Lädt die gespeicherte Ladegeschwindigkeit
+/// Lädt die gespeicherte Ladegeschwindigkeit (immer den KEY zurückgeben!)
 Future<String> loadSelectedSpeed() async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getString(_selectedSpeedKey) ?? 'Alle';
+  return prefs.getString(_selectedSpeedKey) ??
+      'all'; // Default = KEY, nicht Label
 }
 
 /// Lädt die gespeicherten Stecker
@@ -163,12 +162,13 @@ IconData getPlugIcon(String plugType) {
     case 'IEC_62196_T2_COMBO':
       return Icons.flash_on; // CCS
     case 'CHADEMO':
-      return Icons.power; // CHAdeMO b
+      return Icons.power; // CHAdeMO
     default:
       return Icons.device_unknown;
   }
 }
 
+/// Filtert die Ladesäulen-Liste nach Geschwindigkeit und Steckertyp (NUR MIT KEYS!)
 List<ChargingStationInfo> filterStations({
   required List<ChargingStationInfo> allStations,
   required String selectedSpeed,
@@ -201,7 +201,7 @@ List<ChargingStationInfo> filterStations({
   }).toList();
 }
 
-// Mappt UI-Strings auf PlugType-Konstanten
+/// Mappt UI-Strings auf PlugType-Konstanten
 Set<String> mapPlugTypes(Set<String> selectedPlugs) {
   const plugTypeMap = {
     'Typ2': 'IEC_62196_T2',
@@ -212,7 +212,8 @@ Set<String> mapPlugTypes(Set<String> selectedPlugs) {
   return selectedPlugs.map((p) => plugTypeMap[p] ?? p).toSet();
 }
 
-// Prüft, ob eine Station mindestens einen EVSE hat, der zum Filter passt UND verfügbar ist
+/// Prüft, ob eine Station mindestens einen EVSE hat, der zum Filter passt UND verfügbar ist
+/// (NUR MIT KEYS für selectedSpeed!)
 bool isMatchingAndAvailableEvse(
   ChargingStationInfo station,
   String selectedSpeed,
@@ -224,12 +225,12 @@ bool isMatchingAndAvailableEvse(
     final plugMatches =
         mappedPlugs.isEmpty || mappedPlugs.contains(evse.chargingPlug);
 
-    final speedMatches = selectedSpeed == 'Alle' ||
-        (selectedSpeed == 'Bis 50kW' && evse.maxPower <= 50) ||
-        (selectedSpeed == 'Ab 50kW' && evse.maxPower >= 50) ||
-        (selectedSpeed == 'Ab 100kW' && evse.maxPower >= 100) ||
-        (selectedSpeed == 'Ab 200kW' && evse.maxPower >= 200) ||
-        (selectedSpeed == 'Ab 300kW' && evse.maxPower >= 300);
+    final speedMatches = selectedSpeed == 'all' ||
+        (selectedSpeed == 'upto_50' && evse.maxPower <= 50) ||
+        (selectedSpeed == 'from_50' && evse.maxPower >= 50) ||
+        (selectedSpeed == 'from_100' && evse.maxPower >= 100) ||
+        (selectedSpeed == 'from_200' && evse.maxPower >= 200) ||
+        (selectedSpeed == 'from_300' && evse.maxPower >= 300);
 
     final available = evse.status == 'AVAILABLE';
     final notIllegallyParked = evse.illegallyParked == false;
@@ -241,7 +242,7 @@ bool isMatchingAndAvailableEvse(
   return false; // Ladesäule ist Grau
 }
 
-// Entfernt einen Favoriten aus dem Set und speichert es persistent ab
+/// Entfernt einen Favoriten aus dem Set und speichert es persistent ab
 Future<Set<String>> deleteFavorite(
     Set<String> currentFavorites, String stationId) async {
   final prefs = await SharedPreferences.getInstance();

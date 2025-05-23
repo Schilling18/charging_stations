@@ -1,11 +1,3 @@
-// Created 14.03.2024 by Christopher Schilling
-//
-// This file builds the favorites overlay Widget.
-//
-// __version__ = "1.0.1"
-//
-// __author__ = "Christopher Schilling"
-//
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:charging_station/models/api.dart';
@@ -111,10 +103,13 @@ class FavoritesOverlay extends StatelessWidget {
                   subtitleText = '${formatDistance(distance)} ${"away".tr()}, ';
                 }
 
-                subtitleText += availableCount == 1
-                    ? "one_charger_available".tr()
-                    : tr('chargers_available',
-                        args: [availableCount.toString()]);
+                // Zeige Zahl nur für >1 an, sonst Text für genau 1 (bzw. 0)
+                if (availableCount == 1) {
+                  subtitleText += "one_charger_available".tr();
+                } else {
+                  subtitleText +=
+                      '$availableCount ${"chargers_available".tr()}';
+                }
 
                 return Column(
                   children: [
