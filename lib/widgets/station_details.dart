@@ -229,13 +229,13 @@ class StationDetailsWidget extends StatelessWidget {
                                   ),
                                   const Spacer(),
                                   Padding(
-                                    padding: const EdgeInsets.only(right: 40.0),
+                                    padding: const EdgeInsets.only(right: 20.0),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Padding(
                                           padding: const EdgeInsets.only(
-                                              right: 15.0),
+                                              right: 10.0),
                                           child: Icon(
                                             getPlugIcon(evse.chargingPlug),
                                             size: 50.0,
