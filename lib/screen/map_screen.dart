@@ -166,7 +166,7 @@ class MapScreenState extends State<MapScreen> {
   }
 
   Widget _buildSearchOverlay() => SearchOverlay(
-        chargingStations: chargingStations,
+        filteredStations: filteredStations,
         searchController: searchController,
         currentPosition: currentPosition,
         onClose: () {

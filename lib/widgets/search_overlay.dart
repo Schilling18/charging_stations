@@ -2,18 +2,17 @@
 //
 // This file builds the Search Overlay Widget.
 //
-// __version__ = "1.0.0"
-//
+// __version__ = "1.0.1"
 // __author__ = "Christopher Schilling"
-//
+
 import 'package:flutter/material.dart';
 import 'package:charging_station/models/api.dart';
 import 'package:geolocator/geolocator.dart';
-import '../utils/helper.dart';
+import 'package:charging_station/utils/helper.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class SearchOverlay extends StatefulWidget {
-  final List<ChargingStationInfo> chargingStations;
+  final List<ChargingStationInfo> filteredStations;
   final TextEditingController searchController;
   final Position? currentPosition;
   final VoidCallback onClose;
@@ -22,7 +21,7 @@ class SearchOverlay extends StatefulWidget {
 
   const SearchOverlay({
     super.key,
-    required this.chargingStations,
+    required this.filteredStations,
     required this.searchController,
     required this.currentPosition,
     required this.onClose,
@@ -45,20 +44,41 @@ class SearchOverlayState extends State<SearchOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    List<ChargingStationInfo> filteredStations = widget.chargingStations
-        .where((station) =>
-            station.city.toLowerCase() == 'potsdam' &&
-            station.address
-                .toLowerCase()
-                .contains(widget.searchController.text.toLowerCase()))
+    List<ChargingStationInfo> displayStations = widget.filteredStations
+        .where((station) => station.address
+            .toLowerCase()
+            .contains(widget.searchController.text.toLowerCase()))
         .toList();
 
     if (widget.currentPosition != null) {
-      filteredStations.sort((a, b) =>
-          calculateDistance(widget.currentPosition!, a.coordinates).compareTo(
-              calculateDistance(widget.currentPosition!, b.coordinates)));
+      displayStations.sort((a, b) {
+        // Verfügbarkeit berechnen:
+        final aAvailable =
+            a.evses.values.where((evse) => evse.status == 'AVAILABLE').length;
+        final bAvailable =
+            b.evses.values.where((evse) => evse.status == 'AVAILABLE').length;
+
+        // Zuerst nach "keine freien" sortieren:
+        if (aAvailable == 0 && bAvailable > 0) return 1;
+        if (aAvailable > 0 && bAvailable == 0) return -1;
+
+        // Wenn beide gleich (beide 0 oder beide > 0), nach Entfernung sortieren:
+        final aDist = calculateDistance(widget.currentPosition!, a.coordinates);
+        final bDist = calculateDistance(widget.currentPosition!, b.coordinates);
+        return aDist.compareTo(bDist);
+      });
     } else {
-      filteredStations.sort((a, b) => a.address.compareTo(b.address));
+      displayStations.sort((a, b) {
+        final aAvailable =
+            a.evses.values.where((evse) => evse.status == 'AVAILABLE').length;
+        final bAvailable =
+            b.evses.values.where((evse) => evse.status == 'AVAILABLE').length;
+
+        if (aAvailable == 0 && bAvailable > 0) return 1;
+        if (aAvailable > 0 && bAvailable == 0) return -1;
+
+        return a.address.compareTo(b.address);
+      });
     }
 
     return Positioned.fill(
@@ -68,7 +88,7 @@ class SearchOverlayState extends State<SearchOverlay> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _buildSearchContent(filteredStations),
+            _buildSearchContent(displayStations),
             const SizedBox(height: 16.0),
           ],
         ),
@@ -76,7 +96,7 @@ class SearchOverlayState extends State<SearchOverlay> {
     );
   }
 
-  Widget _buildSearchContent(List<ChargingStationInfo> filteredStations) {
+  Widget _buildSearchContent(List<ChargingStationInfo> displayStations) {
     return Container(
       height: 700.0,
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -121,7 +141,7 @@ class SearchOverlayState extends State<SearchOverlay> {
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 16),
                     onChanged: (value) {
-                      setState(() {});
+                      setState(() {}); // Suchergebnis aktualisieren
                     },
                   ),
                 ),
@@ -141,9 +161,9 @@ class SearchOverlayState extends State<SearchOverlay> {
           const SizedBox(height: 16.0),
           Expanded(
             child: ListView.builder(
-              itemCount: filteredStations.length,
+              itemCount: displayStations.length,
               itemBuilder: (context, index) {
-                ChargingStationInfo station = filteredStations[index];
+                ChargingStationInfo station = displayStations[index];
                 int availableCount = station.evses.values
                     .where((evse) => evse.status == 'AVAILABLE')
                     .length;
@@ -155,7 +175,6 @@ class SearchOverlayState extends State<SearchOverlay> {
                   subtitleText = '${formatDistance(distance)} ${'away'.tr()}, ';
                 }
 
-                // Anpassung wie beim FavoritesOverlay
                 if (availableCount == 1) {
                   subtitleText += 'one_charger_available'.tr();
                 } else {
