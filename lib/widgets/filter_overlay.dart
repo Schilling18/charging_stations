@@ -32,7 +32,6 @@ class _FilterOverlayState extends State<FilterOverlay> {
     'Typ2',
     'CCS',
     'CHAdeMO',
-    'Tesla',
   ];
   Set<String> selectedPlugs = {};
 
@@ -47,12 +46,11 @@ class _FilterOverlayState extends State<FilterOverlay> {
   Future<void> _loadSavedFilters() async {
     final speed = await loadSelectedSpeed();
     final plugs = await loadSelectedPlugs();
-    final sensor =
-        await loadSelectedParkingSensor(); // NEU: Lade Parksensor-Status!
+    final sensor = await loadSelectedParkingSensor();
     setState(() {
       selectedSpeed = speed;
       selectedPlugs = plugs;
-      hasParkingSensor = sensor; // NEU
+      hasParkingSensor = sensor;
     });
   }
 

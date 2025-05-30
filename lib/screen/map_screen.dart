@@ -35,6 +35,7 @@ class MapScreenState extends State<MapScreen> {
   bool selectedFromList = false;
   bool showFilterOverlay = false;
   bool showSettingsOverlay = false;
+  bool filteredHasParkingSensor = false;
 
   // --- Map/Position ---
   Position? currentPosition;
@@ -62,6 +63,7 @@ class MapScreenState extends State<MapScreen> {
     selectedCoordinates = defaultCoordinates;
     _loadCurrentPosition();
     _loadChargingStationsAndFavorites();
+    loadInitialFilterSettings();
   }
 
   @override
@@ -93,7 +95,22 @@ class MapScreenState extends State<MapScreen> {
       setState(() {
         chargingStations = stations;
         favoriteIds = favs;
-        filteredStations = stations;
+      });
+
+      // Lade gespeicherte Filter und filtere!
+      final filterSettings =
+          await loadInitialFilterSettings(); // <-- deine Helper-Methode!
+      final filtered = filterStations(
+        allStations: chargingStations,
+        selectedSpeed: filterSettings['selectedSpeed'] as String,
+        selectedPlugs: filterSettings['selectedPlugs'] as Set<String>,
+        hasParkingSensor: filterSettings['hasParkingSensor'] as bool,
+      );
+      setState(() {
+        selectedSpeed = filterSettings['selectedSpeed'] as String;
+        selectedPlugs = filterSettings['selectedPlugs'] as Set<String>;
+        filteredHasParkingSensor = filterSettings['hasParkingSensor'] as bool;
+        filteredStations = filtered;
       });
       updateMarkersFromFilteredStations();
     } catch (e) {
@@ -139,6 +156,7 @@ class MapScreenState extends State<MapScreen> {
                   station,
                   selectedSpeed,
                   selectedPlugs,
+                  hasParkingSensor: filteredHasParkingSensor,
                 )
                     ? Colors.green
                     : Colors.grey,
@@ -269,12 +287,13 @@ class MapScreenState extends State<MapScreen> {
                         allStations: chargingStations,
                         selectedSpeed: newSpeed,
                         selectedPlugs: newPlugs,
-                        hasParkingSensor: hasParkingSensor, // Hier!
+                        hasParkingSensor: hasParkingSensor,
                       );
                       setState(() {
                         selectedSpeed = newSpeed;
                         selectedPlugs = newPlugs;
                         filteredStations = filtered;
+                        filteredHasParkingSensor = hasParkingSensor;
                         showFilterOverlay = false;
                       });
                       updateMarkersFromFilteredStations();

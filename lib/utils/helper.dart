@@ -208,12 +208,20 @@ List<ChargingStationInfo> filterStations({
 }
 
 /// Prüft, ob eine Station mindestens einen EVSE hat, der zum Filter passt UND verfügbar ist
-/// (NUR MIT KEYS für selectedSpeed!)
+/// (NUR MIT KEYS für selectedSpeed! Und optional mit Parksensor)
 bool isMatchingAndAvailableEvse(
   ChargingStationInfo station,
   String selectedSpeed,
-  Set<String> selectedPlugs,
-) {
+  Set<String> selectedPlugs, {
+  bool hasParkingSensor = false, // <--- NEU!
+}) {
+  // Wenn Parksensor gefordert wird, dann muss mindestens ein EVSE einen Parksensor haben
+  if (hasParkingSensor) {
+    final hasSensor = station.evses.values.any(
+        (evse) => evse.parkingSensor != null && evse.parkingSensor is! bool);
+    if (!hasSensor) return false;
+  }
+
   final mappedPlugs = selectedPlugs.map((p) => plugTypeMap[p] ?? p).toSet();
 
   for (final evse in station.evses.values) {
@@ -255,4 +263,17 @@ Future<void> saveSelectedParkingSensor(bool hasSensor) async {
 Future<bool> loadSelectedParkingSensor() async {
   final prefs = await SharedPreferences.getInstance();
   return prefs.getBool(_selectedParkingSensorKey) ?? false;
+}
+
+/// Lädt die gespeicherten Filter-Einstellungen für den Startbildschirm.
+/// Gibt ein Map zurück mit allen Werten.
+Future<Map<String, dynamic>> loadInitialFilterSettings() async {
+  final selectedSpeed = await loadSelectedSpeed();
+  final selectedPlugs = await loadSelectedPlugs();
+  final hasParkingSensor = await loadSelectedParkingSensor();
+  return {
+    'selectedSpeed': selectedSpeed,
+    'selectedPlugs': selectedPlugs,
+    'hasParkingSensor': hasParkingSensor,
+  };
 }
