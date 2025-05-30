@@ -198,8 +198,7 @@ class _FilterOverlayState extends State<FilterOverlay> {
                 onPressed: () async {
                   await saveSelectedSpeed(selectedSpeed);
                   await saveSelectedPlugs(selectedPlugs);
-                  await saveSelectedParkingSensor(
-                      hasParkingSensor); // NEU: Speichern!
+                  await saveSelectedParkingSensor(hasParkingSensor);
                   widget.onApply(
                       selectedSpeed, selectedPlugs, hasParkingSensor);
                   widget.onClose();

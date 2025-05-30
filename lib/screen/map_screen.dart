@@ -98,8 +98,7 @@ class MapScreenState extends State<MapScreen> {
       });
 
       // Lade gespeicherte Filter und filtere!
-      final filterSettings =
-          await loadInitialFilterSettings(); // <-- deine Helper-Methode!
+      final filterSettings = await loadInitialFilterSettings();
       final filtered = filterStations(
         allStations: chargingStations,
         selectedSpeed: filterSettings['selectedSpeed'] as String,
