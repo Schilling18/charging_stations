@@ -264,11 +264,12 @@ class MapScreenState extends State<MapScreen> {
                         showFilterOverlay = false;
                       });
                     },
-                    onApply: (newSpeed, newPlugs) async {
+                    onApply: (newSpeed, newPlugs, hasParkingSensor) async {
                       final filtered = filterStations(
                         allStations: chargingStations,
                         selectedSpeed: newSpeed,
                         selectedPlugs: newPlugs,
+                        hasParkingSensor: hasParkingSensor, // Hier!
                       );
                       setState(() {
                         selectedSpeed = newSpeed;

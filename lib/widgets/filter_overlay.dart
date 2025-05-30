@@ -4,7 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 
 class FilterOverlay extends StatefulWidget {
   final VoidCallback onClose;
-  final Function(String selectedSpeed, Set<String> selectedPlugs) onApply;
+  final Function(String selectedSpeed, Set<String> selectedPlugs,
+      bool hasParkingSensor) onApply;
 
   const FilterOverlay({
     super.key,
@@ -17,7 +18,6 @@ class FilterOverlay extends StatefulWidget {
 }
 
 class _FilterOverlayState extends State<FilterOverlay> {
-  // Speed-Optionen als KEYS, Label kommt aus der Übersetzung
   final List<String> speedOptions = [
     'all',
     'upto_50',
@@ -36,6 +36,8 @@ class _FilterOverlayState extends State<FilterOverlay> {
   ];
   Set<String> selectedPlugs = {};
 
+  bool hasParkingSensor = false;
+
   @override
   void initState() {
     super.initState();
@@ -45,10 +47,12 @@ class _FilterOverlayState extends State<FilterOverlay> {
   Future<void> _loadSavedFilters() async {
     final speed = await loadSelectedSpeed();
     final plugs = await loadSelectedPlugs();
-
+    final sensor =
+        await loadSelectedParkingSensor(); // NEU: Lade Parksensor-Status!
     setState(() {
       selectedSpeed = speed;
       selectedPlugs = plugs;
+      hasParkingSensor = sensor; // NEU
     });
   }
 
@@ -84,83 +88,111 @@ class _FilterOverlayState extends State<FilterOverlay> {
               const Divider(color: Color(0xFFB2BEB5)),
               const SizedBox(height: 10),
               Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'speed'.tr(),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFB2BEB5),
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'speed'.tr(),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFB2BEB5),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      // ChoiceChips für Ladegeschwindigkeit
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: speedOptions.map((optionKey) {
-                          final isSelected = selectedSpeed == optionKey;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: ChoiceChip(
-                              label: Text(tr(optionKey)),
-                              selected: isSelected,
-                              selectedColor: Colors.green,
-                              backgroundColor: const Color(0xFFB2BEB5),
-                              labelStyle: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
+                        const SizedBox(height: 8),
+                        // ChoiceChips für Ladegeschwindigkeit
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: speedOptions.map((optionKey) {
+                            final isSelected = selectedSpeed == optionKey;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: ChoiceChip(
+                                label: Text(tr(optionKey)),
+                                selected: isSelected,
+                                selectedColor: Colors.green,
+                                backgroundColor: const Color(0xFFB2BEB5),
+                                labelStyle: TextStyle(
+                                  color:
+                                      isSelected ? Colors.white : Colors.black,
+                                ),
+                                onSelected: (_) {
+                                  setState(() {
+                                    selectedSpeed = optionKey;
+                                  });
+                                },
                               ),
-                              onSelected: (_) {
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'plug'.tr(),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFB2BEB5),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // FilterChips für Steckertypen
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: plugOptions.map((plug) {
+                            final isSelected = selectedPlugs.contains(plug);
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8.0),
+                              child: FilterChip(
+                                label: Text(plug),
+                                selected: isSelected,
+                                selectedColor: Colors.green,
+                                backgroundColor: const Color(0xFFB2BEB5),
+                                labelStyle: TextStyle(
+                                  color:
+                                      isSelected ? Colors.white : Colors.black,
+                                ),
+                                onSelected: (selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      selectedPlugs.add(plug);
+                                    } else {
+                                      selectedPlugs.remove(plug);
+                                    }
+                                  });
+                                },
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 20),
+                        // Parksensor Filter
+                        Row(
+                          children: [
+                            Switch(
+                              value: hasParkingSensor,
+                              activeColor: Colors.green,
+                              onChanged: (value) {
                                 setState(() {
-                                  selectedSpeed = optionKey;
+                                  hasParkingSensor = value;
                                 });
                               },
                             ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        'plug'.tr(),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFB2BEB5),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // FilterChips für Steckertypen
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: plugOptions.map((plug) {
-                          final isSelected = selectedPlugs.contains(plug);
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8.0),
-                            child: FilterChip(
-                              label: Text(plug),
-                              selected: isSelected,
-                              selectedColor: Colors.green,
-                              backgroundColor: const Color(0xFFB2BEB5),
-                              labelStyle: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
+                            const SizedBox(width: 8),
+                            Text(
+                              "filter_parking_sensor".tr(),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Color(0xFFB2BEB5),
                               ),
-                              onSelected: (selected) {
-                                setState(() {
-                                  if (selected) {
-                                    selectedPlugs.add(plug);
-                                  } else {
-                                    selectedPlugs.remove(plug);
-                                  }
-                                });
-                              },
                             ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 20),
-                    ],
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -168,7 +200,10 @@ class _FilterOverlayState extends State<FilterOverlay> {
                 onPressed: () async {
                   await saveSelectedSpeed(selectedSpeed);
                   await saveSelectedPlugs(selectedPlugs);
-                  widget.onApply(selectedSpeed, selectedPlugs);
+                  await saveSelectedParkingSensor(
+                      hasParkingSensor); // NEU: Speichern!
+                  widget.onApply(
+                      selectedSpeed, selectedPlugs, hasParkingSensor);
                   widget.onClose();
                 },
                 style: ElevatedButton.styleFrom(

@@ -16,6 +16,14 @@ import 'package:charging_station/models/api.dart';
 
 const String _selectedSpeedKey = 'selected_speed';
 const String _selectedPlugsKey = 'selected_plugs';
+const String _selectedParkingSensorKey = 'selected_parking_sensor';
+
+const plugTypeMap = {
+  'Typ2': 'IEC_62196_T2',
+  'CCS': 'IEC_62196_T2_COMBO',
+  'CHAdeMO': 'CHADEMO',
+  'Tesla': 'TESLA',
+};
 
 /// Berechnet die Entfernung zwischen der aktuellen Position und einer Ladestation
 double calculateDistance(Position currentPosition, LatLng stationPosition) {
@@ -147,7 +155,7 @@ String formatPlugType(String plugType) {
     case 'IEC_62196_T2_COMBO':
       return 'CCS';
     case 'CHADEMO':
-      return 'CHAdeMo';
+      return 'ChaDeMo';
     case 'IEC_80005_3':
       return 'IEC_80005_3';
     default:
@@ -168,23 +176,23 @@ IconData getPlugIcon(String plugType) {
   }
 }
 
-/// Filtert die Ladesäulen-Liste nach Geschwindigkeit und Steckertyp (NUR MIT KEYS!)
 List<ChargingStationInfo> filterStations({
   required List<ChargingStationInfo> allStations,
   required String selectedSpeed,
   required Set<String> selectedPlugs,
+  bool hasParkingSensor = false,
 }) {
-  const plugTypeMap = {
-    'Typ2': 'IEC_62196_T2',
-    'CCS': 'IEC_62196_T2_COMBO',
-    'CHAdeMO': 'CHADEMO',
-    'Tesla': 'TESLA',
-  };
-
   final mappedPlugs = selectedPlugs.map((p) => plugTypeMap[p] ?? p).toSet();
 
   return allStations.where((station) {
-    final hasMatchingEvse = station.evses.values.any((evse) {
+    if (hasParkingSensor) {
+      // Nur Stationen mit mindestens EINEM EVSE, wo parking_sensor ein Objekt ist
+      final hasSensor = station.evses.values.any(
+          (evse) => evse.parkingSensor != null && evse.parkingSensor is! bool);
+      if (!hasSensor) return false;
+    }
+
+    return station.evses.values.any((evse) {
       final plugMatches =
           mappedPlugs.isEmpty || mappedPlugs.contains(evse.chargingPlug);
       final speedMatches = selectedSpeed == 'all' ||
@@ -196,20 +204,7 @@ List<ChargingStationInfo> filterStations({
 
       return plugMatches && speedMatches;
     });
-
-    return hasMatchingEvse;
   }).toList();
-}
-
-/// Mappt UI-Strings auf PlugType-Konstanten
-Set<String> mapPlugTypes(Set<String> selectedPlugs) {
-  const plugTypeMap = {
-    'Typ2': 'IEC_62196_T2',
-    'CCS': 'IEC_62196_T2_COMBO',
-    'CHAdeMO': 'CHADEMO',
-    'Tesla': 'TESLA',
-  };
-  return selectedPlugs.map((p) => plugTypeMap[p] ?? p).toSet();
 }
 
 /// Prüft, ob eine Station mindestens einen EVSE hat, der zum Filter passt UND verfügbar ist
@@ -219,7 +214,7 @@ bool isMatchingAndAvailableEvse(
   String selectedSpeed,
   Set<String> selectedPlugs,
 ) {
-  final mappedPlugs = mapPlugTypes(selectedPlugs);
+  final mappedPlugs = selectedPlugs.map((p) => plugTypeMap[p] ?? p).toSet();
 
   for (final evse in station.evses.values) {
     final plugMatches =
@@ -250,4 +245,14 @@ Future<Set<String>> deleteFavorite(
     ..remove(stationId);
   await prefs.setStringList('favoriteIds', updatedFavorites.toList());
   return updatedFavorites;
+}
+
+Future<void> saveSelectedParkingSensor(bool hasSensor) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool(_selectedParkingSensorKey, hasSensor);
+}
+
+Future<bool> loadSelectedParkingSensor() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getBool(_selectedParkingSensorKey) ?? false;
 }

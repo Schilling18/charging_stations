@@ -31,5 +31,7 @@
   "distance": "Entfernung",
   "available": "Verfügbar",
   "occupied": "Besetzt",
-  "parking_sensor": "Parksensor Verbaut"
+  "parking_sensor": "Parksensor verbaut",
+  "filter_parking_sensor": "Nur mit Parksensor"
+
 }

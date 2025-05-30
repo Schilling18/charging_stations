@@ -30,5 +30,7 @@
   "distance": "Distance",
   "available": "Available",
   "occupied": "Occupied",
-  "parking_sensor": "Sensor installed"
+  "parking_sensor": "Sensor installed",
+  "filter_parking_sensor": "Only with parking sensor"
+
 }
